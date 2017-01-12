@@ -1,5 +1,12 @@
 # Tips for Linux kernel & driver development
 
+build a debian package from source
+```
+$ dpkb-buildpackage -d
+-d: 의존성/충돌 체크 안함
+-b: 소스 체크 안함 
+```
+
 change console keyboard layout: ``sudo apt-get install console-common``
 
 git command for prerry: ``git log --pretty=format:"%h %ad%x09%s"``
