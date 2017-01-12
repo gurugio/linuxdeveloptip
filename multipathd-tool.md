@@ -1,6 +1,6 @@
 multipathd is combination of multipathd daemon and multipathd command tool.
 
-# multipathd daemon
+# multipathd daemon - read source code
 
 activated multipathd/main.c: child()
 
