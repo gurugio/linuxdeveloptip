@@ -1,7 +1,5 @@
-(current format is moniwiki)
 
-
-= with qemu =
+# debug kernel with qemu
 
 https://www.kernel.org/doc/Documentation/gdb-kernel-debugging.txt
 
@@ -11,17 +9,16 @@ http://www.linux-magazine.com/Online/Features/Qemu-and-the-Kernel
 
 http://wiki.osdev.org/Kernel_Debugging
 
-== -gdb tcp::1234 or -s option ==
+## -gdb tcp::1234 or -s option
 
-'''enable kernel option: CONFIG_DEBUG_INFO'''
-
--gdb tcp::1234 option is equivalent to -s option.
+enable kernel option: CONFIG_DEBUG_INFO
+* -gdb tcp::1234 option is equivalent to -s option.
 
 If you use want to use another port you would want to set -gdb tcp::<PORT> option.
 
 
 run qemu with -s options:
-{{{
+```
 gohkim@ws00837:~/work/linux-storage$ qemu-system-x86_64 -smp 4 -cpu host -m 2048 \
 > -kernel arch/x86/boot/bzImage \
 > -enable-kvm -nographic \
@@ -29,16 +26,17 @@ gohkim@ws00837:~/work/linux-storage$ qemu-system-x86_64 -smp 4 -cpu host -m 2048
 > -initrd ~/work/qemu_ubuntu/initrd.img-3.12.45-1-storage+ \
 > -append "root=/dev/vda1 ro splash nomodeset earlyprintk console=tty0 console=ttyS0" \
 > -redir tcp:7777::22 -s
-}}}
+```
 The -s option opens 1234 port for gdb connection.
 
 run gdb:
- * gdb vmlinux
- * target remote localhost:1234
- * b rcu_process_callbacks
- * c
- * ctrl + c
-{{{
+* gdb vmlinux
+* target remote localhost:1234
+* b rcu_process_callbacks
+* c
+* ctrl + c
+
+```
 gohkim@ws00837:~/work/linux-storage$ gdb vmlinux
 GNU gdb (Ubuntu 7.10-1ubuntu2) 7.10
 Copyright (C) 2015 Free Software Foundation, Inc.
@@ -87,12 +85,12 @@ Breakpoint 1, rcu_process_callbacks (
 2232		if (cpu_is_offline(smp_processor_id()))
 2233			return;
 (gdb) 
-}}}
+```
 
 Now the target kernel will run and print messages.
 
 
-== -S (large S) option ==
+## -S (large S) option
 
 The -S makes the qemu stop before running kernel and wait for gdb.
 We can debug some functions in early booting process.
@@ -100,7 +98,7 @@ But it has a bug: "Remote 'g' packet reply is too long"
 
 IT IS NOT SOLVED IN UBUNTU-15.04 with:
 
-{{{
+```
 gohkim@ws00837:~/work/linux-storage$ gdb -v
 GNU gdb (Ubuntu 7.10-1ubuntu2) 7.10
 Copyright (C) 2015 Free Software Foundation, Inc.
@@ -118,10 +116,10 @@ For help, type "help".
 Type "apropos word" to search for commands related to "word".
 gohkim@ws00837:~/work/linux-storage$ qemu-system-x86_64 --version
 QEMU emulator version 2.3.0 (Debian 1:2.3+dfsg-5ubuntu9.1), Copyright (c) 2003-2008 Fabrice Bellard
-}}}
+```
 
 
-== python scripts for gdb ==
+## python scripts for gdb
 
 
 http://lxr.free-electrons.com/source/Documentation/gdb-kernel-debugging.txt
@@ -131,7 +129,7 @@ http://lxr.free-electrons.com/source/Documentation/gdb-kernel-debugging.txt
 
 from Roman's email:
 
-{{{
+```
 
 3.  Live debugging with the GDB is already a bit of a help, but there
     are some python scripts shipped with a kernel to make live more
@@ -184,10 +182,10 @@ from Roman's email:
         $1 = (struct thread_info *) 0xffff880139bc8000
 
             Returns thread_info.
-}}}
+```
 
 
-= with kdump =
+# with kdump
 
 https://www.kernel.org/doc/Documentation/kdump/kdump.txt
 
@@ -197,7 +195,7 @@ http://superuser.com/questions/280767/how-can-i-enable-kernel-crash-dumps-in-deb
 
 The steps are roughly,
 
-{{{
+```
 sudo apt-get install kdump-tools  ==> ubuntu: linux-crashdump
 Set USE_KDUMP=1 in /etc/defaults/kdump-tools
 Add crashkernel=128M to the kernel command-line given in bootloader configuration (e.g. /etc/defaults/grub). It also doesn't hurt to pass nmi_watchdog=1 as well to ensure that hard hangs are caught.
@@ -215,19 +213,19 @@ Optional: Test that all of this worked,
 sudo sync; echo c | sudo tee /proc/sysrq-trigger
 Use the crash tool to look at the resulting crash dump
 Find a handle of good whiskey to ease the pain of your future in kernel debugging.
-}}}
+```
 
 
-{{{
+```
 dmesg | grep -i crash
 
 ...
 [    0.000000] Reserving 64MB of memory at 800MB for crashkernel (System RAM: 1023MB)
-}}}
+```
 
 
 crash V6.x.x needs to upgrade!: https://www.redhat.com/archives/crash-utility/2012-June/msg00007.html
-{{{
+```
 root@ib2:~/tmp/linux-pserver# crash vmlinux /var/crash/201512231645/dump.201512231645 
 
 crash 6.0.6
@@ -266,20 +264,20 @@ LOAD AVERAGE: 0.01, 0.29, 0.22
       MEMORY: 7.7 GB
        PANIC: 
 crash: cannot determine length of symbol: log_end
-}}}
+```
 
 
-= download a specific version of kernel =
+# download a specific version of kernel
 
 To download another version of the kernel, not installed in the system.
 
- 1. apt-cache search package-name : find the package name
- 1. apt-cache policy package-name : find the version table
- 1. apt-get download/install package-name=version : download/install the specific version of the package
- 1. dpkg -x package-name dir-path : extract the package into dir
+1. apt-cache search package-name : find the package name
+1. apt-cache policy package-name : find the version table
+1. apt-get download/install package-name=version : download/install the specific version of the package
+1. dpkg -x package-name dir-path : extract the package into dir
 
 To download linux-source-4.2.0-16.19:
-{{{
+```
 gohkim@ws00837:~$ apt-cache policy linux-source-4.2.0 
 linux-source-4.2.0:
   Installed: 4.2.0-27.32
@@ -315,26 +313,26 @@ gohkim@ws00837:~$ apt-get download linux-source-4.2.0=4.2.0-16.19
 Get:1 http://de.archive.ubuntu.com/ubuntu/ wily/main linux-source-4.2.0 all 4.2.0-16.19 [108 MB]
 19% [1 linux-source-4.2.0 20,4 MB/108 MB 19%]                    1.858 kB/s 46s^C
 
-}}}
+```
 
-= crash tool =
+# crash tool
 
- * bt
+* bt
   * bt -c 17: only task at cpu-17
   * bt -c 16-31: cpu 16 ~ 31
- * foreach bt: backtrace of all processes
- * log: kernel log
- * ps
- * disassemble <kernel-function>
+* foreach bt: backtrace of all processes
+* log: kernel log
+* ps
+* disassemble <kernel-function>
   * disassemble /r <kernel-function>: print opcode and instruction
- * rd <address> <count>: read memory from address
- * gdb list *(memcpy+16): find c-code line
- * mod: print modules
+* rd <address> <count>: read memory from address
+* gdb list *(memcpy+16): find c-code line
+* mod: print modules
   * no information for module loaded: ffffffffa0316fa0  kvm                   342174  (not loaded)  [CONFIG_KALLSYMS]
   * mod -S: find modules <path-of-vmlinux>/lib/modules/<version>/<modules-path>
   * There not only vmlinux but also modules should be copied
 
 
-= debugging case =
+# debugging case
 
- * qemu cannot support ACPI -> cannot debug acpi_idle, frequency setting
+* qemu cannot support ACPI -> cannot debug acpi_idle, frequency setting
