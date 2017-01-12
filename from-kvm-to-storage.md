@@ -2,65 +2,65 @@
 
 
 
-= overview =
+# overview
 
 
 Refer to https://gurugio.kldp.net/wiki/wiki.php/linux_kernel_test_md_driver to analysis from syscall to md driver.
 
-{{{
+```
 qemu -> md0 -> RAID1(dm-1 & dm-2) -> MULTIPATH(sd[abcd]) -> scsi -> srp -> infiniband HCA <--------> infiniband HCA -> srpt -> SCST & target_handler -> dm-3 -> RAID1(sda & sdb)
-}}}
+```
 
- * md & dm: /drivers/md
- * multipath: /drivers/md/dm-mpath.c
- * srp: drivers/infiniband/ulp/srp
- * infiniband HCA: drivers/infinibahd/core, drivers/infiniband/hw/mlx4
- * srpt: drivers/infiniband/ulp/srpt, scst/srpt/
- * scst target-handler: scst/dev_handlers
+* md & dm: /drivers/md
+* multipath: /drivers/md/dm-mpath.c
+* srp: drivers/infiniband/ulp/srp
+* infiniband HCA: drivers/infinibahd/core, drivers/infiniband/hw/mlx4
+* srpt: drivers/infiniband/ulp/srpt, scst/srpt/
+* scst target-handler: scst/dev_handlers
 
 
 
-= mdadm =
+# mdadm
 
 create dev file: 9->major, 111->minor because name is md111
-{{{
+```
 mknod("/dev/.tmp.md.20601:9:111", S_IFBLK|0600, makedev(9, 111)) = 0
 open("/dev/.tmp.md.20601:9:111", O_RDWR|O_EXCL|O_DIRECT) = 4
-}}}
+```
 
 ioctl sequence:
- * SET_ARRAY_INFO
- * ADD_NEW_DISK
- * RUN_ARRAY
+* SET_ARRAY_INFO
+* ADD_NEW_DISK
+* RUN_ARRAY
 
 
-= md =
+# md
 
 md device management & sysfs entries
- * https://www.kernel.org/doc/Documentation/md.txt
+* https://www.kernel.org/doc/Documentation/md.txt
 
 start with raid0_personality
- * http://stackoverflow.com/questions/34588184/how-does-linux-md-driver-write-data-to-sata-disk
+* http://stackoverflow.com/questions/34588184/how-does-linux-md-driver-write-data-to-sata-disk
 
 http://www.linuxjournal.com/article/2391?page=0,0
 
 
 md_init:
- * create work-queue: "md", "md_misc", "md_reload"
- * blk_register_region() register probe callback: md_probe
- * md_probe() -> md_alloc() is called when /dev/mdX device file is created
+* create work-queue: "md", "md_misc", "md_reload"
+* blk_register_region() register probe callback: md_probe
+* md_probe() -> md_alloc() is called when /dev/mdX device file is created
 
 
 md_alloc:
- * create "struct mddev" object for each mdX device file
+* create "struct mddev" object for each mdX device file
   * disk->private_data = mddev
   * md_ioctl(struct block_device *bdev, ...) -> bdev->bd_disk->private_data == mddev
- * create queue: {{{mddev->queue = blk_alloc_queue(GFP_KERNEL);}}}
- * make request: {{{blk_queue_make_request(mddev->queue, md_make_request);}}}
- * register "block_device_operations": {{{disk->fops = &md_fops;}}}
+* create queue: {{{mddev->queue = blk_alloc_queue(GFP_KERNEL);}}}
+* make request: {{{blk_queue_make_request(mddev->queue, md_make_request);}}}
+* register "block_device_operations": {{{disk->fops = &md_fops;}}}
   * md_open: do almost nothing
   * DO NOT have read/write because read/write are handled by VFS layer def_blk_fops.
-{{{
+```
 static const struct block_device_operations md_fops =
 {
 	.owner		= THIS_MODULE,
@@ -74,60 +74,59 @@ static const struct block_device_operations md_fops =
 	.media_changed  = md_media_changed,
 	.revalidate_disk= md_revalidate,
 };
-}}}
+```
 
 
 struct mddev:
- * struct md_personality *pers = raid1.c:struct md_personality raid1_personality
+* struct md_personality *pers = raid1.c:struct md_personality raid1_personality
  * 
 
 md_ioctl:
- * SET_ARRAY_INFO
+* SET_ARRAY_INFO
   * initialize mddev
   * create bitmap at mddev->bitmap
- * ADD_NEW_DISK
+* ADD_NEW_DISK
   * get info from user
   * add_new_disk()
    * create "struct md_rdev" for child devices: md100 = dm-0 + dm-1 -> md_rdev stores infor for dm-0/1
    * bind dm-0/1 into md100
- * RUN_ARRAY
+* RUN_ARRAY
   * do_md_run()
   * mddev->pers->run() = raid1_personality.run
-   * set mddev->private = conf
-   * conf->raid_disks = mddev->raid_disks: the number of component disks 
-   * conf->thread == raid1d() -> [md111_raid1]: each mdX device has its own thread
-    * raid1d thread
-     * 
+    * set mddev->private = conf
+    * conf->raid_disks = mddev->raid_disks: the number of component disks 
+    * conf->thread == raid1d() -> [md111_raid1]: each mdX device has its own thread
+    * raid1d thread 
   * set MD_RECOVERY_NEEDED at mddev->recovery -> it might need to start a resync/recover
 
 
 IO
- * md_make_request
+* md_make_request
   * calls mddev->pers->make_request = raid1.c:make_request()
 
 
 struct r1bio
- * struct bio *master_bio: original bio going to /dev/mdX
+* struct bio *master_bio: original bio going to /dev/mdX
   * This is re-used for READ
- * {{{struct bio *bios[0]}}}: For WRITE, store multiple bios
+* {{{struct bio *bios[0]}}}: For WRITE, store multiple bios
   * if raid1 and mdX is composed with two disks, bios can be 4
   * 2 for two disks, 2 for replacements
 
 
 raid1.c:make_request()
- * make_request() receives the original bio
- * set r1_bio->master_bio = bio
- * READ:
+* make_request() receives the original bio
+* set r1_bio->master_bio = bio
+* READ:
   * read_balance() decides disk to which bio should go -> '''do not read every component disks, read from only one disk among them'''
   * struct bio *read_bio = bio_clone_mddev(original-bio, GFP_NOIO, mddev)
   * read_bio->bi_bdev = mirror->rdev->bdev
-   * conf->mirrors: setup_conf(), current working rdev of component disks
+    * conf->mirrors: setup_conf(), current working rdev of component disks
   * read_bio->bi_end_io = raid1_end_read_request
-   * call bio_endio with bios
-   * decrease the number of pending bio of the disk
+    * call bio_endio with bios
+    * decrease the number of pending bio of the disk
   * read_bio->bi_rw = READ | do_sync
   * generic_make_request(read_bio) -> '''pass bio to target disk'''
- * WRITE:
+* WRITE:
   * find target disks
   * make clone-bio with bio_clone_mddev()
   * r1_bio->bios[0] = clone-bio, r1_bio->bios[1] = clone-bio
@@ -135,86 +134,88 @@ raid1.c:make_request()
   * add cloned-bio into conf->pending_bio_list
   * wake up mddev->thread -> '''= raid1d(), md111_raid1 kernel-thread can be found with "px aux | grep raid1"'''
   * raid1()
-   * flush_pending_writes() is core
-   * lock conf->device_lock
-   * get bio from conf->pending_bio_list
-   * call generic_make_request with bio
+    * flush_pending_writes() is core
+    * lock conf->device_lock
+    * get bio from conf->pending_bio_list
+    * call generic_make_request with bio
 
 
-= dm & dm_multipath =
+# dm & dm_multipath
 
 dm: device mapper
- * What is the "device mapper"?: https://en.wikipedia.org/wiki/Device_mapper
+* What is the "device mapper"?: https://en.wikipedia.org/wiki/Device_mapper
   * The device mapper is a framework provided by the Linux kernel for mapping physical block devices onto higher-level virtual block devices. It forms the foundation of LVM2, software RAIDs and dm-crypt disk encryption, and offers additional features such as file system snapshots.
   * pass data from the virtual device to another block device
   * Data can be also modified in transition, which is performed, for example, in the case of device mapper providing disk encryption or simulation of unreliable hardware behavior.
- * How to use
+* How to use
   * issue ioctl to /dev/mapper/control device node via libdevmapper.so
- * features
+* features
   * software raid is a feature of device mapper
   * multipath: provide "load balancing" and "Path failover and recover"
-   * https://en.wikipedia.org/wiki/Linux_DM_Multipath
-   * including multipath, multipathd, devmap-name and kpartx
+    * https://en.wikipedia.org/wiki/Linux_DM_Multipath
+    * including multipath, multipathd, devmap-name and kpartx
   * delay, zero and etc
 
 dm device is registered as misc device, so MAJOR number is 252.
 
 And minor number is device number. For example, dm-0 is (252,0) and dm-1 is (252,1).
-{{{
+```
 root@storage1:/sys/block/md111# ls -l /dev/dm-0
 brw-rw---- 1 root disk 252, 0 Sep 22 04:51 /dev/dm-0
 root@storage1:/sys/block/md111# ls -l /dev/dm-1
 brw-rw---- 1 root disk 252, 1 Sep 22 04:51 /dev/dm-1
 root@storage1:/sys/block/md111# ls -l /dev/dm-2
 brw-rw---- 1 root disk 252, 2 Sep 23 09:36 /dev/dm-2
-}}}
+```
 
 driver/md/Makefile: CONFIG_DM_MULTIPATH build from dm-mpath.c & dm-path-selector.c
-{{{
+```
 dm-multipath-y	+= dm-path-selector.o dm-mpath.o
 obj-$(CONFIG_DM_MULTIPATH)	+= dm-multipath.o dm-round-robin.o
-}}}
+```
 
-'''multipath.c is not CONFIG_DM_MULTIPATH, but CONFIG_MD_MULTIPATH. We use CONFIG_DM_MULTIPATH.'''
+multipath.c is not CONFIG_DM_MULTIPATH, but CONFIG_MD_MULTIPATH. We use CONFIG_DM_MULTIPATH.
 
 struct mapped_device
  * 
 
 Initialize bio handling
- * {{{strict file_operations _ctl_fops.unlocked_ioctl = dm_ctl_ioctl() -> ctl_ioctl() -> dev_create() -> dm_create() -> alloc_dev() -> dm_init_md_queue()}}}
+```
+strict file_operations _ctl_fops.unlocked_ioctl = dm_ctl_ioctl() -> ctl_ioctl() -> dev_create() -> dm_create() -> alloc_dev() -> dm_init_md_queue()
+```
 
 dm.c:alloc_dev(): create dm device
- * get minor number and create object of "struct mapped_device" type.
- * make queue: {{{md->queue = blk_alloc_queue(GFP_KERNEL);}}}
- * dm_init_md_queue(): {{{blk_queue_make_request(md->queue, dm_request);}}}
- * make gendisk: {{{md->disk = alloc_disk(1)}}}
- * create work-queue "kdmflush": {{{md->wq = alloc_workqueue("kdmflush", WQ_MEM_RECLAIM, 0);}}}
+* get minor number and create object of "struct mapped_device" type.
+* make queue: {{{md->queue = blk_alloc_queue(GFP_KERNEL);}}}
+* dm_init_md_queue(): {{{blk_queue_make_request(md->queue, dm_request);}}}
+* make gendisk: {{{md->disk = alloc_disk(1)}}}
+* create work-queue "kdmflush": {{{md->wq = alloc_workqueue("kdmflush", WQ_MEM_RECLAIM, 0);}}}
   * each dm device has its own kdmflush: If system has dm-0 and dm-1, there are two kdmflush threads
- * register "struct block_device_operations dm_blk_dop"
+* register "struct block_device_operations dm_blk_dop"
   * {{{.ioctl = dm_blk_ioctl,}}}
 
 dm-mpath.c:dm_multipath_init()
- * registers target: {{{dm_register_target(&multipath_target);}}}
+* registers target: {{{dm_register_target(&multipath_target);}}}
   * callbacks: map_rq, rq_end_io, ioctl and etc
   * multipath_target.ctr = multipath_ctr()
-   * alloc_multipath()
+    * alloc_multipath()
     * create "struct multipath" object
     * target->private = "struct multipath"
- * workqueue: {{{[dm-0_kmpathd]}}}
+* workqueue: {{{[dm-0_kmpathd]}}}
 
 dm device ioctl: via "struct target_type"
- * call "struct dm_target" -> "struct target_type" -> ioctl
+* call "struct dm_target" -> "struct target_type" -> ioctl
   * {{{r = tgt->type->ioctl(tgt, cmd, arg);}}}
- * target is registered by dm-mpath.c:dm_multipath_init()
+* target is registered by dm-mpath.c:dm_multipath_init()
   * {{{dm_register_target(&multipath_target);}}}
 
 
-'''CONCLUSION'''
- * IOCTL: dm.c:dm_blk_dops.ioctl = dm_blk_ioctl() -> {{{tgt->type->ioctl()}}} -> dm-mpath.c:multipath_ioctl()
+CONCLUSION
+* IOCTL: dm.c:dm_blk_dops.ioctl = dm_blk_ioctl() -> {{{tgt->type->ioctl()}}} -> dm-mpath.c:multipath_ioctl()
   * "struct multipath" has the current path "struct pgpath" that has "struct block_device" for target path
   * call __blkdev_driver_ioctl(): "struct block_device"->bdev->bd_disk->fops->ioctl()
    * just pass ioctl command to the target path
- * bio: dm.c:dm_request()
+* bio: dm.c:dm_request()
   * insert bio into md->deferred list
   * activate dm->wq work-queue with md->work = dm_wq_work()
    * dm_wq_work(): call generic_make_request() with bio in dm->deferred list
@@ -223,32 +224,28 @@ dm device ioctl: via "struct target_type"
 Finally dm passes bio into scsi driver
 
 
-= scsi =
+# scsi
 
 
+# srp & srpt
 
-= srp & srpt =
-
-'''InfiniBand SCSI RDMA Protocol'''
+InfiniBand SCSI RDMA Protocol
 
 https://en.wikipedia.org/wiki/SCSI_RDMA_Protocol
- * allows one computer to access SCSI devices attached to another computer via remote direct memory access (RDMA).
- * RDMA is only possible with network adapters that support RDMA in hardware. -> Infiniband HCAs
- * an SRP initiator implementation, an SRP target implementation and networking hardware supported by the initiator and target are needed. 
- * SRP initiator: drivers/infiniband/ulp/srp/
- * SRP target
+* allows one computer to access SCSI devices attached to another computer via remote direct memory access (RDMA).
+* RDMA is only possible with network adapters that support RDMA in hardware. -> Infiniband HCAs
+* an SRP initiator implementation, an SRP target implementation and networking hardware supported by the initiator and target are needed. 
+* SRP initiator: drivers/infiniband/ulp/srp/
+* SRP target
   * drivers/infiniband/ulp/srpt/
   * Mellanox OFFED target(http://www.mellanox.com/pdf/products/pdk_dev/Gen2_SRPT_README.txt)
   * SCST srpt target
   * all are the same but which has the latest patches??
 
-how to use: https://gurugio.kldp.net/wiki/wiki.php/infiniband
-
-
-=== srpt ===
+## srpt
 
 struct scst_tgt_template: registered in srpt_init_module()
-{{{
+```
 	/*
 	 * This function should detect the target adapters that
 	 * are present in the system. The function should return a value
@@ -331,8 +328,9 @@ struct scst_tgt_template: registered in srpt_init_module()
 	 * device.
 	 */
 	int (*exec)(struct scst_cmd *cmd);
-}}}
-{{{
+```
+
+```
 /* SCST target template for the SRP target implementation. */
 static struct scst_tgt_template srpt_template = {
 	.name				 = DRV_NAME,
@@ -360,25 +358,23 @@ static struct scst_tgt_template srpt_template = {
 	.get_initiator_port_transport_id = srpt_get_initiator_port_transport_id,
 	.get_scsi_transport_version	 = srpt_get_scsi_transport_version,
 };
-}}}
+```
 
 
 srpt_init_module
- * scst_register_target_template(): register SCST target template for SRP target implementation
+* scst_register_target_template(): register SCST target template for SRP target implementation
   * exec callback is not set in srpt_template, so commands will be sent directly to SCSI device
- * ib_register_client(): set up IB connection
- * rdma_bind_addr() & rdma_listen(): listen on RDMA device
+* ib_register_client(): set up IB connection
+* rdma_bind_addr() & rdma_listen(): listen on RDMA device
 
 
 static int srpt_compl_thread(void *arg)
- * srpt_cm_handler() (IB connection manager) calls srpt_ib_cm_req_recv()->srpt_cm_req_recv() for IB_CM_REQ_RECEIVED(=SRP_LOGIN_REQ) event
+* srpt_cm_handler() (IB connection manager) calls srpt_ib_cm_req_recv()->srpt_cm_req_recv() for IB_CM_REQ_RECEIVED(=SRP_LOGIN_REQ) event
   * srpt_cm_req_recv() 
-   * create "struct srpt_rdma_ch"
-   * creates kthread {{{[srpt_mlx4_0-1]}}} with "struct srpt_rdma_ch" object
- * 
-
-
-{{{
+    * create "struct srpt_rdma_ch"
+    * creates kthread {{{[srpt_mlx4_0-1]}}} with "struct srpt_rdma_ch" object
+ 
+```
 static int srpt_compl_thread(void *arg)
 {
 	enum { poll_budget = 65536 };
@@ -452,41 +448,41 @@ Sleep until be stopped with TASK_RUNNING state.
 
 	return 0;
 }
-}}}
+```
 
 
 1. What does srpt_process_completion() do?
- * srpt_process_completion()->ib_poll_cq()->mlx4_ib_poll_cq()
+* srpt_process_completion()->ib_poll_cq()->mlx4_ib_poll_cq()
   * poll a CQ for completion
   * check how many commands in CQ are finished?
- * srpt_process_one_compl()->srpt_process_rcv_completion() & sprt_process_send_completion()
+* srpt_process_one_compl()->srpt_process_rcv_completion() & sprt_process_send_completion()
   * process an IB receive/send completion: I DON'T KNOW the detail
- * '''WHY those completion is done with TASK_INTERRUPTIBLE state?'''
+* '''WHY those completion is done with TASK_INTERRUPTIBLE state?'''
 
 
 2. Where does srpt kthread be stopped?
- * ch->thread = srpt_process_completion()
- * srpt_unreg_sess() calls kthread_stop(ch->thread)
- * srpt_unregister_session() register srpt_unreg_sess() callback into sess->unreg_done_fn
+* ch->thread = srpt_process_completion()
+* srpt_unreg_sess() calls kthread_stop(ch->thread)
+* srpt_unregister_session() register srpt_unreg_sess() callback into sess->unreg_done_fn
   * {{{sess->unreg_done_fn = unreg_done_fn;}}}
   * '''scst_rx_mgmt_fn_lun()'''
-   * '''Abort all outstanding commands and clear reservation, if necessary'''
-   * '''This can be stuck!!!'''
+    * '''Abort all outstanding commands and clear reservation, if necessary'''
+    * '''This can be stuck!!!'''
   * {{{scst_sess_put(sess);}}}: this should make sess->unreg_done_fn be called. -> scst_global_mgmt_thread()-> scst_free_session_callback()->scst_free_session() calls sess->unreg_done_fn()
   * wait is false, so wait_for_completion() is not called
- * So there are two suspects
+* So there are two suspects
   * 1. scst_rx_mgmt_fn_lun() did not finish
   * 2. scst_sess_put() could not call sess->unreg_done_fn callback.
 
 sess->unreg_done_fn is called in scst_global_mgmt_thread()
- * scst_sess_put()->scst_sched_session_free()->wakt_up(&scst_mgmt_waitQ) ----> scst_global_mgmt_thread(): wait_event_locked(scst_mgmt_waitQ,...)
- * scst_global_mgmt_thread() is the global thread for all sessions..
- * If there were about 100 sessions, could it be bottle-neck?
+* scst_sess_put()->scst_sched_session_free()->wakt_up(&scst_mgmt_waitQ) ----> scst_global_mgmt_thread(): wait_event_locked(scst_mgmt_waitQ,...)
+* scst_global_mgmt_thread() is the global thread for all sessions..
+* If there were about 100 sessions, could it be bottle-neck?
 
 
 
 
-= scst =
+## scst
 
 
 srpt is the target of srp connection
@@ -501,9 +497,9 @@ how to use: https://gurugio.kldp.net/wiki/wiki.php/linux_kernel_scst
 
 how to use iscsi(another scsi target driver): https://gurugio.kldp.net/wiki/wiki.php/iscsi
 
-=== dev_handler: scst_vdisk ===
+## dev_handler: scst_vdisk 
 
-{{{
+```
 static struct scst_dev_type vdisk_blk_devtype = {
 	.name =			"vdisk_blockio",
 	.type =			TYPE_DISK,
@@ -546,45 +542,44 @@ static struct scst_dev_type vdisk_blk_devtype = {
 #endif
 #endif
 };
-}}}
+```
 
 struct struct scst_dev_type vdisk_blk_devtype
- * http://scst.sourceforge.net/scst_pg.html: 5.1 Structure scst_dev_type
- * int (*exec) (struct scst_cmd *cmd)
+* http://scst.sourceforge.net/scst_pg.html: 5.1 Structure scst_dev_type
+* int (*exec) (struct scst_cmd *cmd)
   * called to execute CDB. Useful, for instance, to implement data caching. The result of CDB execution is reported via cmd->scst_cmd_done() callback. Returns:
   * SCST_EXEC_COMPLETED - the cmd is done, go to other ones
   * SCST_EXEC_NOT_COMPLETED - the cmd should be sent to SCSI mid-level.
   * If this function provides sync execution, you should set exec_sync flag and consider to setup dedicated threads by setting threads_num > 0. Optional, if not set, the commands will be sent directly to SCSI device. If this function is implemented, scst_check_local_events() shall be called inside it just before the actual command's execution.
   * non_fileio_exec()
-   * {{{vdisk_op_fn *ops = virt_dev->vdev_devt->devt_priv}}}
-   * vdisk_op_fn blockio_ops set callback for each command, for instance, READ_6, WRITE_6 and etc.
-    * READ_* -> blockio_exec_read
-    * WRITE_* -> blockio_exec_write
-   * call vdev_do_job with ops
-   * vdev_do_job() -> ops[opcode] = blockio_exec_read or blockio_exec_write -> blockio_exec_rw -> submit_bio
-   * blockio_exec_rw()
-    * create bio and call submit_bio
-    * bio->bi_end_io = blockio_endio
+    * {{{vdisk_op_fn *ops = virt_dev->vdev_devt->devt_priv}}}
+    * vdisk_op_fn blockio_ops set callback for each command, for instance, READ_6, WRITE_6 and etc.
+      * READ_* -> blockio_exec_read
+      * WRITE_* -> blockio_exec_write
+    * call vdev_do_job with ops
+    * vdev_do_job() -> ops[opcode] = blockio_exec_read or blockio_exec_write -> blockio_exec_rw -> submit_bio
+    * blockio_exec_rw()
+      * create bio and call submit_bio
+      * bio->bi_end_io = blockio_endio
 
 
 
 
-= references =
-
+# references
 
 block device overview
- * http://free-electrons.com/doc/block_drivers.pdf
- * https://yannik520.github.io/blkdevarch.html
+* http://free-electrons.com/doc/block_drivers.pdf
+* https://yannik520.github.io/blkdevarch.html
 
 storage stack diagram
- * https://www.thomas-krenn.com/en/wiki/Linux_Storage_Stack_Diagram
+* https://www.thomas-krenn.com/en/wiki/Linux_Storage_Stack_Diagram
 
 lwn articles
- * https://lwn.net/Kernel/Index/#Block_layer
- * https://lwn.net/Kernel/Index/#Device_drivers-Block_drivers
- * https://lwn.net/Kernel/Index/#Filesystems
- * https://lwn.net/Kernel/Index/#Multipath_IO
- * https://lwn.net/Kernel/Index/#SCSI
- * https://lwn.net/Kernel/Index/#Solid-state_storage_devices
- * md/dm layer: https://lwn.net/Kernel/Index/#RAID
+* https://lwn.net/Kernel/Index/#Block_layer
+* https://lwn.net/Kernel/Index/#Device_drivers-Block_drivers
+* https://lwn.net/Kernel/Index/#Filesystems
+* https://lwn.net/Kernel/Index/#Multipath_IO
+* https://lwn.net/Kernel/Index/#SCSI
+* https://lwn.net/Kernel/Index/#Solid-state_storage_devices
+* md/dm layer: https://lwn.net/Kernel/Index/#RAID
 
