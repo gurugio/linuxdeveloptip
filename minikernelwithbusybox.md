@@ -1,25 +1,21 @@
-(current format is moniwiki)
-
 http://mgalgs.github.io/2015/05/16/how-to-build-a-custom-linux-kernel-for-qemu-2015-edition.html
 
+# minimal kernel booting with initramfs of busybox
 
-minimal kernel booting with initramfs of busybox
-
-
-= build busybox and generate initramfs =
+## build busybox and generate initramfs
 
 kernel v4.4 needs more recent busybox or fails to execute init.
 
-{{{
+```
 $ curl http://busybox.net/downloads/busybox-1.23.2.tar.bz2 | tar xjf -
 $ make defconfig
 $ make O=../obj/busybox-x86 menuconfig
-}}}
+```
 
 
-'''IMPORTANT: type /, search for “static”. You’ll see that the option is located at:'''
+IMPORTANT: type /, search for “static”. You’ll see that the option is located at:
 
-{{{
+```
 -> Busybox Settings
   -> Build Options
 [ ] Build BusyBox as a static binary (no shared libs)
@@ -49,46 +45,47 @@ exec /bin/sh
 
 $ chmod +x init
 The Gentoo wiki’s Custom Initramfs page is a great reference for building a minimalistic initramfs if you’d like to learn more.
+```
 
 We’re now ready to cpio everything up:
-
+```
 $ find . -print0 \
     | cpio --null -ov --format=newc \
     | gzip -9 > $TOP/obj/initramfs-busybox-x86.cpio.gz
-}}}
+```
 
-= build kernel with kvm features =
+## build kernel with kvm features
 
 https://github.com/teobaluta/qr-linux-kernel/commit/46ff53874bd935ab9955dee56d60212857e89bf3
 
-{{{
+```
 $ make x86_64_defconfig
 $ make kvmconfig
 add some features for kvm
 
 $ make -j8
-}}}
+```
 
-= boot qemu with virtual disk =
+## boot qemu with virtual disk
 
-{{{
+```
 $ qemu-img create disk_data.img 16G
 $ qemu-system-x86_64 -kernel arch/x86/boot/bzImage \
 -initrd ../qemu_initramfs/initramfs_dir/initramfs-busybox-x86.cpio.gz \
 -nographic -append "console=ttyS0" -enable-kvm \
 -drive file=disk_data.img,if=virtio,cache=none
-}}}
+```
 
-= monitor mode =
+## monitor mode
 
 enter monitor more: ctrl+a c
 
 quit command to quit qemu
 
 
-= format disk =
+## format disk
 
-{{{
+```
 / # fdisk /dev/vda
 / # mkfs.ext2 /dev/vda
 Filesystem label=
@@ -113,6 +110,6 @@ rootfs on / type rootfs (rw,size=55128k,nr_inodes=13782)
 none on /proc type proc (rw,relatime)
 none on /sys type sysfs (rw,relatime)
 /dev/vda on /mnt type ext4 (rw,relatime)
-}}}
+```
 
 Now we can save non-volatile data in /mnt.
