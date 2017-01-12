@@ -1,7 +1,5 @@
-# overview
+# md - dm - scsi - srp - srpt - dm(lvm) - scsi
 
-
-Refer to https://gurugio.kldp.net/wiki/wiki.php/linux_kernel_test_md_driver to analysis from syscall to md driver.
 
 ```
 qemu -> md0 -> RAID1(dm-1 & dm-2) -> MULTIPATH(sd[abcd]) -> scsi -> srp -> infiniband HCA <--------> infiniband HCA -> srpt -> SCST & target_handler -> dm-3 -> RAID1(sda & sdb)
