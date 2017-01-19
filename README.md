@@ -1,5 +1,17 @@
 # Tips for Linux kernel & driver development
 
+check the coding style of external driver source file with checkpatch.pl
+* --file: check regular file, not patch
+* --no-tree: no kernel source tree
+* --help prints other options
+```
+gohkim@ws00837:~/study/little_challenge/task05$ ~/work/linux-torvalds/scripts/checkpatch.pl --file --no-tree drv.c
+WARNING: please, no spaces at the start of a line
+#25: FILE: drv.c:25:
++    printk(KERN_EMERG "usb_task05_probe\n");$
+...
+```
+
 build a debian package from source
 ```
 $ dpkb-buildpackage -d
