@@ -1,5 +1,15 @@
 # Tips for Linux kernel & driver development
 
+checkout a remote branch
+```
+git fetch
+git checkout test
+```
+But there are multiple remote, it doesn't download the branch, then:
+```
+git checkout -b test <name of remote>/test
+```
+
 check the coding style of external driver source file with checkpatch.pl
 * --file: check regular file, not patch
 * --no-tree: no kernel source tree
