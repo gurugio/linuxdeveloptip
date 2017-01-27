@@ -1,5 +1,13 @@
 # Tips for Linux kernel & driver development
 
+change keyboard layout for console
+```
+try...
+# sudo dpkg-reconfigure console-setup
+# dpkg-reconfigure keyboard-configuration
+# reboot
+```
+
 checkout a remote branch
 ```
 git fetch
