@@ -1,5 +1,26 @@
 # Tips for Linux kernel & driver development
 
+checkpatch.pl usage
+* show type of issue: --show-types
+* show only specified types: --types
+```
+$ ./scripts/checkpatch.pl --file --show-types drivers/staging/greybus/*.c
+----------------------------------------
+drivers/staging/greybus/arche-apb-ctrl.c
+----------------------------------------
+CHECK:LINE_SPACING: Please don't use multiple blank lines
+#24: FILE: drivers/staging/greybus/arche-apb-ctrl.c:24:
++
++
+
+CHECK:PARENTHESIS_ALIGNMENT: Alignment should match open parenthesis
+#74: FILE: drivers/staging/greybus/arche-apb-ctrl.c:74:
++	if (apb->init_disabled ||
++			apb->state == ARCHE_PLATFORM_STATE_ACTIVE)
+
+$./scripts/checkpatch.pl --file --types="LONG_LINE" drivers/staging/greybus/*.c | less
+```
+
 change keyboard layout for console
 ```
 try...
