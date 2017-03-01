@@ -1,5 +1,10 @@
 # Tips for Linux kernel & driver development
 
+strip modules when linux kernel installs modules
+```
+# make INSTALL_MOD_STRIP=1 modules_install
+```
+
 checkpatch.pl usage
 * show type of issue: --show-types
 * show only specified types: --types
