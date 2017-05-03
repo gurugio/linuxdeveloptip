@@ -1,5 +1,13 @@
 # Tips for Linux kernel & driver development
 
+Create screen session and run a command in the screen without attaching the screen
+* "-d -m": Start screen in detached mode. 
+* "-S sessionname": set session name as sessionname
+'''
+# screen -dmS ddd stress --cpu 2 --io 2 --hdd 2 --vm 2
+# sshpass -p passwd ssh root@1.2.3.4 'screen -dmS ddd stress --cpu 2 --io 2 --hdd 2 --vm 2'
+'''
+
 strip modules when linux kernel installs modules
 ```
 # make INSTALL_MOD_STRIP=1 modules_install
