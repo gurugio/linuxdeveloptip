@@ -319,6 +319,8 @@ x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0
 
 # find what irq was injected by kvm
 
+## INTEL/vmx
+
 "struct kvm_vcpu" has interrupt number of Guest,  injected by kvm.
 * 239 is "Local APIC timer interrupt"
 ```
@@ -326,5 +328,135 @@ crash> struct kvm_vcpu.arch.interrupt.nr 0xffff8802c4088000
   arch.interrupt.nr = 239 '\357'
 ```
 
+# AMD/svm
+
+event_inj of vcpu_svm.vmcb.control has the number of irq
+* for example, 0x80000081 is irq 0x81
+
+```
+static void svm_set_irq(struct kvm_vcpu *vcpu)
+{
+	struct vcpu_svm *svm = to_svm(vcpu);
+
+	BUG_ON(!(gif_set(svm)));
+
+	trace_kvm_inj_virq(vcpu->arch.interrupt.nr);
+	++vcpu->stat.irq_injections;
+
+	svm->vmcb->control.event_inj = vcpu->arch.interrupt.nr |
+		SVM_EVTINJ_VALID | SVM_EVTINJ_TYPE_INTR;
+}
+```
+
 # read registers of VCPU with jprobe
 
+how to use jprobe
+* check address of kvm_arch_vcpu_ioctl_run in /proc/kallsyms
+* set ```my_probe.kp.addr = (kprobe_opcode_t *)ADDRESS;```
+* my_handler() is called before kvm_arch_vcpu_ioctl_run
+* my_handler() reads register via kvm_register_read() or vmcs_readl()
+  * kvm_register_read() works for both of INTEL/AMD
+  * vmcs_readl() works for AMD
+  * check vmx.c and svm.c in arch/x86/kvm/
+
+```
+#include<linux/module.h>
+#include<linux/version.h>
+#include<linux/kernel.h>
+#include<linux/init.h>
+#include<linux/kprobes.h>
+#include <linux/kvm_host.h>
+
+
+#include <asm/cpu.h>
+#include <asm/io.h>
+#include <asm/desc.h>
+#include <asm/vmx.h>
+#include <asm/virtext.h>
+#include <asm/mce.h>
+#include <asm/fpu/internal.h>
+#include <asm/perf_event.h>
+#include <asm/debugreg.h>
+#include <asm/kexec.h>
+#include <asm/apic.h>
+#include <asm/irq_remapping.h>
+
+
+MODULE_LICENSE("GPL");  
+
+// copied from vmc.c
+#define __ex_clear(x, reg)					\
+	____kvm_handle_fault_on_reboot(x, "xor " reg " , " reg)
+
+static __always_inline unsigned long vmcs_readl(unsigned long field)
+{
+	unsigned long value;
+
+	asm volatile (__ex_clear(ASM_VMX_VMREAD_RDX_RAX, "%0")
+		      : "=a"(value) : "d"(field) : "cc");
+	return value;
+}
+
+
+static __always_inline u32 vmcs_read32(unsigned long field)
+{
+	return vmcs_readl(field);
+}
+
+// copied from kvm_cache_regs.h
+static inline unsigned long kvm_register_read(struct kvm_vcpu *vcpu,
+					      enum kvm_reg reg)
+{
+	if (!test_bit(reg, (unsigned long *)&vcpu->arch.regs_avail))
+		kvm_x86_ops->cache_reg(vcpu, reg);
+
+	return vcpu->arch.regs[reg];
+}
+
+void kvm_get_segment(struct kvm_vcpu *vcpu,
+		     struct kvm_segment *var, int seg)
+{
+	kvm_x86_ops->get_segment(vcpu, var, seg);
+}
+
+int my_handler(struct kvm_vcpu *vcpu)
+{ 
+	// INTEL/vmx
+	/* pr_err("RSP = 0x%016lx SS = 0x%04x RIP = 0x%016lx\n", */
+	/*        vmcs_readl(GUEST_RSP), vmcs_read32(GUEST_SS_SELECTOR), vmcs_readl(GUEST_RIP)); */
+
+	// common for AMD/svm and INTEL/vmx
+	{
+		struct kvm_segment ss;
+		kvm_get_segment(vcpu, &ss, VCPU_SREG_SS);
+		
+		pr_err("RSP = 0x%016lx SS = 0x%04x RIP = 0x%016lx\n",
+		       kvm_register_read(vcpu, VCPU_REGS_RSP),
+		       ss.selector,
+		       kvm_register_read(vcpu, VCPU_REGS_RIP));
+	}
+
+	jprobe_return();
+	return 0; // never reach here
+}
+ 
+static struct jprobe my_probe;
+ 
+int myinit(void)
+{
+	// TODO: address of kvm_arch_vcpu_ioctl_run in /proc/kallsyms
+	my_probe.kp.addr = (kprobe_opcode_t *)0xffffffffa01d22f0;
+	my_probe.entry = (kprobe_opcode_t *)my_handler;
+	register_jprobe(&my_probe);
+	return 0;
+}
+ 
+void myexit(void)
+{
+	unregister_jprobe(&my_probe);
+	printk("module removed\n ");
+}
+ 
+module_init(myinit);
+module_exit(myexit);
+```
