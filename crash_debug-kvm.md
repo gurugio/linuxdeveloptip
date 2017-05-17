@@ -317,4 +317,14 @@ x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0
 }
 ```
 
+# find what irq was injected by kvm
+
+"struct kvm_vcpu" has interrupt number of Guest,  injected by kvm.
+* 239 is "Local APIC timer interrupt"
+```
+crash> struct kvm_vcpu.arch.interrupt.nr 0xffff8802c4088000
+  arch.interrupt.nr = 239 '\357'
+```
+
 # read registers of VCPU with jprobe
+
