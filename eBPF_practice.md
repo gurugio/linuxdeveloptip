@@ -7,9 +7,8 @@ This document is based on Debuan/Ubuntu distribution.
 kernel options for eBPF:
 ```
 root@ws00837:/home/gohkim/work/linux-torvalds# grep BPF .config
-CONFIG_BPF=y
-CONFIG_BPF_SYSCALL=y
-CONFIG_NETFILTER_XT_MATCH_BPF=m
+CONFIG_BPF=y  --------> mandatory
+CONFIG_BPF_SYSCALL=y -> mandatory
 CONFIG_NET_CLS_BPF=m
 CONFIG_NET_ACT_BPF=m
 CONFIG_BPF_JIT=y
