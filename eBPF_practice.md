@@ -1,6 +1,6 @@
-# intro
+# introduction to eBPF
 
-introduction to eBPF: http://www.brendangregg.com/ebpf.html
+Good document: http://www.brendangregg.com/ebpf.html
 
 This document is based on Debuan/Ubuntu distribution.
 
@@ -18,15 +18,47 @@ CONFIG_BPF_EVENTS=y
 CONFIG_TEST_BPF=m
 ```
 
-# kprobe
+# install bcc-tools using eBPF
+
+WARNING! Tools are installed in ``/usr/share/bcc/tools`` directory.
+* not /usr/bin
+```
+$ echo "deb [trusted=yes] https://repo.iovisor.org/apt/xenial xenial-nightly main" | \
+    sudo tee /etc/apt/sources.list.d/iovisor.list
+$ sudo apt-get update
+$ sudo apt-get install bcc-tools
+$ ls /usr/share/bcc/tools/
+argdist       dbstat               hardirqs        offcputime   rubyflow     tcpconnlat
+bashreadline  dcsnoop              javacalls       offwaketime  rubygc       tcplife
+biolatency    dcstat               javaflow        old          rubyobjnew   tcpretrans
+biosnoop      deadlock_detector    javagc          oomkill      rubystat     tcptop
+biotop        deadlock_detector.c  javaobjnew      opensnoop    runqlat      tcptracer
+bitesize      doc                  javastat        phpcalls     runqlen      tplist
+bpflist       execsnoop            javathreads     phpflow      slabratetop  trace
+btrfsdist     ext4dist             killsnoop       phpstat      softirqs     ttysnoop
+btrfsslower   ext4slower           lib             pidpersec    solisten     vfscount
+cachestat     filelife             llcstat         profile      sslsniff     vfsstat
+cachetop      fileslower           mdflush         pythoncalls  stackcount   wakeuptime
+capable       filetop              memleak         pythonflow   statsnoop    xfsdist
+cobjnew       funccount            mountsnoop      pythongc     syncsnoop    xfsslower
+cpudist       funclatency          mysqld_qslower  pythonstat   syscount     zfsdist
+cpuunclaimed  funcslower           nodegc          reset-trace  tcpaccept    zfsslower
+dbslower      gethostlatency       nodestat        rubycalls    tcpconnect
+```
+
+
+# ubuntu tools of perf-tools-unstable package
+
+## kprobe
+
 manual: http://manpages.ubuntu.com/manpages/zesty/man8/kprobe-perf.8.html
 
 
-# functrace
+## functrace
 
 manual: http://manpages.ubuntu.com/manpages/zesty/man8/functrace.8.html
 
-## simple trace a kernel function
+### simple trace a kernel function
 
 ```
 root@ws00837:/home/gohkim/work/linux-torvalds# functrace do_nanosleep
