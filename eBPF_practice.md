@@ -20,8 +20,8 @@ CONFIG_TEST_BPF=m
 
 # install bcc-tools using eBPF
 
-WARNING! Tools are installed in ``/usr/share/bcc/tools`` directory.
-* not /usr/bin
+WARNING! Tools are installed in ``/usr/share/bcc/tools`` directory, not /usr/bin
+And every tool is Python or Bash script.
 ```
 $ echo "deb [trusted=yes] https://repo.iovisor.org/apt/xenial xenial-nightly main" | \
     sudo tee /etc/apt/sources.list.d/iovisor.list
@@ -77,31 +77,34 @@ options:
 * ``-D``: for each devices
 * ``-Q``: include queued time
 
+## biosnoop
 
-# ubuntu tools of perf-tools-unstable package
-
-## kprobe
-
-manual: http://manpages.ubuntu.com/manpages/zesty/man8/kprobe-perf.8.html
-
-
-## functrace
-
-manual: http://manpages.ubuntu.com/manpages/zesty/man8/functrace.8.html
-
-### simple trace a kernel function
-
+Trace block device I/O with process, disk, and latency details: no option
+* use grep to filter
 ```
-root@ws00837:/home/gohkim/work/linux-torvalds# functrace do_nanosleep
-Tracing "do_nanosleep"... Ctrl-C to end.
-        redshift-2190  [006] .... 91973.831185: do_nanosleep <-hrtimer_nanosleep
-      irqbalance-1110  [001] .... 91976.338481: do_nanosleep <-hrtimer_nanosleep
-        redshift-2190  [006] .... 91978.833109: do_nanosleep <-hrtimer_nanosleep
- gnome-terminal--2291  [002] .... 91978.892798: do_nanosleep <-hrtimer_nanosleep
- gnome-terminal--2291  [002] .... 91978.927036: do_nanosleep <-hrtimer_nanosleep
- gnome-terminal--2291  [002] .... 91978.960710: do_nanosleep <-hrtimer_nanosleep
-^C
-Ending tracing...
+gohkim@ws00837:~/work/tmp$ sudo /usr/share/bcc/tools/biosnoop 
+TIME(s)        COMM           PID    DISK    T  SECTOR    BYTES   LAT(ms)
+0.000000000    ?              0              R  -1        8          1.09
+2.000026000    ?              0              R  -1        8          1.11
+3.094404000    BrowserBlockin 2465   sda     W  148372480 143360     1.72
+3.094592000    jbd2/dm-0-8    271    sda     W  105815096 36864      0.10
+3.105634000    kworker/5:1    17199  sda     W  105815168 4096       0.04
+3.999985000    ?              0              R  -1        8          1.13
+5.999989000    ?              0              R  -1        8          1.12
+8.000018000    ?              0              R  -1        8          1.10
+8.424784000    jbd2/dm-0-8    271    sda     W  68169456  4096       1.53
+8.424800000    jbd2/dm-0-8    271    sda     W  68168248  4096       1.53
+8.424800000    jbd2/dm-0-8    271    sda     W  69198784  8192       1.52
+gohkim@ws00837:~/work/tmp$ sudo /usr/share/bcc/tools/biosnoop | grep Chrome
+0.000000000    Chrome_SyncThr 2592   sda     W  65321472  200704     1.87
+0.011592000    Chrome_SyncThr 2592   sda     W  65321472  4096       0.03
+0.017208000    Chrome_SyncThr 2592   sda     W  3223632   65536      0.15
+0.017269000    Chrome_SyncThr 2592   sda     W  3223824   32768      0.20
 ```
 
-## 
+
+
+# perf-tools-unstable package
+
+kprobe: http://manpages.ubuntu.com/manpages/zesty/man8/kprobe-perf.8.html
+functrace: http://manpages.ubuntu.com/manpages/zesty/man8/functrace.8.html
