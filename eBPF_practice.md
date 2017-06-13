@@ -46,6 +46,37 @@ cpuunclaimed  funcslower           nodegc          reset-trace  tcpaccept    zfs
 dbslower      gethostlatency       nodestat        rubycalls    tcpconnect
 ```
 
+# practices
+
+## biolatency
+
+gather bio latency before exit:
+```
+gohkim@ws00837:~/work/tmp$ sudo /usr/share/bcc/tools/biolatency 
+[sudo] password for gohkim: 
+Tracing block device I/O... Hit Ctrl-C to end.
+^C
+     usecs               : count     distribution
+         0 -> 1          : 0        |                                        |
+         2 -> 3          : 0        |                                        |
+         4 -> 7          : 0        |                                        |
+         8 -> 15         : 0        |                                        |
+        16 -> 31         : 2        |                                        |
+        32 -> 63         : 5        |**                                      |
+        64 -> 127        : 16       |*******                                 |
+       128 -> 255        : 6        |**                                      |
+       256 -> 511        : 84       |****************************************|
+       512 -> 1023       : 44       |********************                    |
+      1024 -> 2047       : 39       |******************                      |
+      2048 -> 4095       : 1        |                                        |
+```
+
+options:
+* ``gohkim@ws00837:~/work/tmp$ sudo /usr/share/bcc/tools/biolatency  3``: print every 3 seconds until ctrl+c
+* ``gohkim@ws00837:~/work/tmp$ sudo /usr/share/bcc/tools/biolatency  3 2``: every 3 seconds, 2 times
+* ``-D``: for each devices
+* ``-Q``: include queued time
+
 
 # ubuntu tools of perf-tools-unstable package
 
