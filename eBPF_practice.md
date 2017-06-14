@@ -144,7 +144,7 @@ gohkim@ws00837:~/work/tmp$ sudo /usr/share/bcc/tools/biosnoop | grep Chrome
 profile prints callstack of each CPU. 
 https://github.com/iovisor/bcc/blob/master/tools/profile_example.txt
 
-*I cannot run profile on kernel v4.4.*
+*I cannot run profile on kernel v4.4. It requires newer kernel.*
 
 # perf-tools-unstable package
 
