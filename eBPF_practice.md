@@ -20,7 +20,8 @@ CONFIG_TEST_BPF=m
 # install bcc-tools using eBPF
 
 WARNING! Tools are installed in ``/usr/share/bcc/tools`` directory, not /usr/bin
-And every tool is Python or Bash script.
+And every tool is Python or Bash script, so each tool has a manual inside of file.
+
 ```
 $ echo "deb [trusted=yes] https://repo.iovisor.org/apt/xenial xenial-nightly main" | \
     sudo tee /etc/apt/sources.list.d/iovisor.list
@@ -44,6 +45,43 @@ cpudist       funclatency          mysqld_qslower  pythonstat   syscount     zfs
 cpuunclaimed  funcslower           nodegc          reset-trace  tcpaccept    zfsslower
 dbslower      gethostlatency       nodestat        rubycalls    tcpconnect
 ```
+
+And doc directory has how use manuals for each tool:
+```
+gohkim@ws00837:~$ ls /usr/share/bcc/tools/doc
+argdist_example.txt            javacalls_example.txt       rubygc_example.txt
+bashreadline_example.txt       javaflow_example.txt        rubyobjnew_example.txt
+biolatency_example.txt         javagc_example.txt          rubystat_example.txt
+biosnoop_example.txt           javaobjnew_example.txt      runqlat_example.txt
+biotop_example.txt             javastat_example.txt        runqlen_example.txt
+bitesize_example.txt           javathreads_example.txt     slabratetop_example.txt
+bpflist_example.txt            killsnoop_example.txt       softirqs_example.txt
+btrfsdist_example.txt          lib                         solisten_example.txt
+btrfsslower_example.txt        llcstat_example.txt         sslsniff_example.txt
+cachestat_example.txt          mdflush_example.txt         stackcount_example.txt
+cachetop_example.txt           memleak_example.txt         statsnoop_example.txt
+capable_example.txt            mountsnoop_example.txt      syncsnoop_example.txt
+cobjnew_example.txt            mysqld_qslower_example.txt  syscount_example.txt
+cpudist_example.txt            nodegc_example.txt          tcpaccept_example.txt
+cpuunclaimed_example.txt       nodestat_example.txt        tcpconnect_example.txt
+dbslower_example.txt           offcputime_example.txt      tcpconnlat_example.txt
+dbstat_example.txt             offwaketime_example.txt     tcplife_example.txt
+dcsnoop_example.txt            oomkill_example.txt         tcpretrans_example.txt
+dcstat_example.txt             opensnoop_example.txt       tcptop_example.txt
+deadlock_detector_example.txt  phpcalls_example.txt        tcptracer_example.txt
+execsnoop_example.txt          phpflow_example.txt         tplist_example.txt
+ext4dist_example.txt           phpstat_example.txt         trace_example.txt
+ext4slower_example.txt         pidpersec_example.txt       ttysnoop_example.txt
+filelife_example.txt           profile_example.txt         vfscount_example.txt
+fileslower_example.txt         pythoncalls_example.txt     vfsstat_example.txt
+filetop_example.txt            pythonflow_example.txt      wakeuptime_example.txt
+funccount_example.txt          pythongc_example.txt        xfsdist_example.txt
+funclatency_example.txt        pythonstat_example.txt      xfsslower_example.txt
+funcslower_example.txt         reset-trace_example.txt     zfsdist_example.txt
+gethostlatency_example.txt     rubycalls_example.txt       zfsslower_example.txt
+hardirqs_example.txt           rubyflow_example.txt
+```
+
 
 # practices
 
@@ -101,7 +139,12 @@ gohkim@ws00837:~/work/tmp$ sudo /usr/share/bcc/tools/biosnoop | grep Chrome
 0.017269000    Chrome_SyncThr 2592   sda     W  3223824   32768      0.20
 ```
 
+## profile
 
+profile prints callstack of each CPU. 
+https://github.com/iovisor/bcc/blob/master/tools/profile_example.txt
+
+*I cannot run profile on kernel v4.4.*
 
 # perf-tools-unstable package
 
