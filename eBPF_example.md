@@ -1,13 +1,16 @@
 
 
-Preparation
+# Preparation
 * install libelf-dev libssl-dev
 * install kernel headers into /usr/include/linux: make headers_install
 * clang >= v3.4.0
 * llam >= v3.7.1
 * ulimit -l 10240
 
-How to increase limit: if ulimit -l 10240 doesn't work
+# How to increase limit: if ulimit -l 10240 doesn't work
+
+If there is an error like ``failed to create a map: 1 Operation not permitted``...
+
 1. /etc/security/limits.conf 
 ```
 vi /etc/security/limits.conf 
@@ -24,8 +27,9 @@ gurugio@giohnote:~/kernel/linux-source-4.4.0$ ulimit -n
 10240
 ```
 
-build
-* ``make samples/bpf/``
+# build
+
+Do ``make samples/bpf/``
 
 Fix Makefile of v4.4
 ```
@@ -34,7 +38,7 @@ Fix Makefile of v4.4
 LLC=llc
 ```
 
-Following is example source.
+# example source.
 
 ```
 root@debianvm:/usr/src/linux-source-4.9# cat samples/bpf/gioh1_user.c
