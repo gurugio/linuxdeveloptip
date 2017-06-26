@@ -1,5 +1,17 @@
 # Tips for Linux kernel & driver development
 
+Keep ssh connection from being frozen: add following lines in /etc/ssh/sshd_config
+```
+--------- client side ----------
+Host *
+ServerAliveInterval 100
+
+-------- server side ------------
+ClientAliveInterval 60
+TCPKeepAlive yes
+ClientAliveCountMax 10000
+```
+
 Including kernel header directly in application cannot succeed. Two ways to install kernel headers into /usr/src/linux directory
 * install linux-libc-dev package for normal distribution kernel
 * run ``make headers_install`` for custom kernel
