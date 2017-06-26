@@ -1,5 +1,25 @@
 # Tips for Linux kernel & driver development
 
+Including kernel header directly in application cannot succeed. Two ways to install kernel headers into /usr/src/linux directory
+* install linux-libc-dev package for normal distribution kernel
+* run ``make headers_install`` for custom kernel
+```
+gkim@ib1:~/linux-pserver-future$ gcc -Wp,-MD,samples/bpf/.test_verifier.o.d -Wall -Wmissing-prototypes -Wstrict-prototypes -O2 -fomit-frame-pointer -std=gnu89 -I./usr/include -I./include/uapi    -c -o samples/bpf/test_verifier.o samples/bpf/test_verifier.c
+In file included from ./include/uapi/linux/bpf.h:10:0,
+                 from samples/bpf/test_verifier.c:12:
+./include/uapi/linux/types.h:9:2: warning: #warning "Attempt to use kernel headers from user space, see http://kernelnewbies.org/KernelHeaders" [-Wcpp]
+ #warning "Attempt to use kernel headers from user space, see http://kernelnewbies.org/KernelHeaders"
+  ^
+In file included from ./include/uapi/linux/posix_types.h:4:0,
+                 from ./include/uapi/linux/types.h:13,
+                 from ./include/uapi/linux/bpf.h:10,
+                 from samples/bpf/test_verifier.c:12:
+./include/uapi/linux/stddef.h:1:28: fatal error: linux/compiler.h: No such file or directory
+ #include <linux/compiler.h>
+                            ^
+compilation terminated.
+```
+
 Create screen session and run a command in the screen without attaching the screen
 * "-d -m": Start screen in detached mode. 
 * "-S sessionname": set session name as sessionname
