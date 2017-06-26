@@ -1,5 +1,11 @@
 
 
+install packages before build
+* libelf-dev
+* install kernel headers into /usr/include/linux: make headers_install
+* clang >= v3.4.0
+* llam >= v3.7.1
+
 ```
 root@debianvm:/usr/src/linux-source-4.9# cat samples/bpf/gioh1_user.c
 #include <stdio.h>
