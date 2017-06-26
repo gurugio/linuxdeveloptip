@@ -6,6 +6,7 @@
 * clang >= v3.4.0
 * llam >= v3.7.1
 * ulimit -l 10240
+* mount kernel debugfs: ``mount -t debugfs none /sys/kernel/debug/``
 
 # How to increase limit: if ulimit -l 10240 doesn't work
 
@@ -36,6 +37,21 @@ Fix Makefile of v4.4
 # point this to your LLVM backend with bpf support
 #LLC=$(srctree)/tools/bpf/llvm/bld/Debug+Asserts/bin/llc
 LLC=llc
+```
+
+Run each sample program.
+```
+gurugio@giohnote:~/kernel/linux-source-4.4.0$ sudo ./samples/bpf/sockex1
+TCP 0 UDP 0 ICMP 0 bytes
+TCP 0 UDP 0 ICMP 196 bytes
+```
+```
+gurugio@giohnote:~/kernel/linux-source-4.4.0$ sudo ./samples/bpf/tracex1
+            ping-5802  [000] d.s1  1134.435854: : skb ffff88021576a600 len 84
+            ping-5802  [000] d.s1  1134.435881: : skb ffff88021576ae00 len 84
+
+            ping-5802  [000] d.s1  1135.435228: : skb ffff88021576a300 len 84
+            ping-5802  [000] d.s1  1135.435273: : skb ffff88021576bb00 len 84
 ```
 
 # example source.
