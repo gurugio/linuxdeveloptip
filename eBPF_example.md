@@ -7,10 +7,34 @@ Preparation
 * llam >= v3.7.1
 * ulimit -l 10240
 
+How to increase limit: if ulimit -l 10240 doesn't work
+1. /etc/security/limits.conf 
+```
+vi /etc/security/limits.conf 
+*               soft    nofile            10240
+*               hard    nofile            10240
+```
+2. add one line into /etc/pam.d/common-session and /etc/pam.d/common-session-noninteractive 
+```
+session required pam_limits.so
+```
+3. reboot
+```
+gurugio@giohnote:~/kernel/linux-source-4.4.0$ ulimit -n
+10240
+```
+
 build
 * ``make samples/bpf/``
 
+Fix Makefile of v4.4
+```
+# point this to your LLVM backend with bpf support
+#LLC=$(srctree)/tools/bpf/llvm/bld/Debug+Asserts/bin/llc
+LLC=llc
+```
 
+Following is example source.
 
 ```
 root@debianvm:/usr/src/linux-source-4.9# cat samples/bpf/gioh1_user.c
