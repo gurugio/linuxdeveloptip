@@ -1,11 +1,16 @@
 
 
 Preparation
-* install libelf-dev
+* install libelf-dev libssl-dev
 * install kernel headers into /usr/include/linux: make headers_install
 * clang >= v3.4.0
 * llam >= v3.7.1
 * ulimit -l 10240
+
+build
+* ``make samples/bpf/``
+
+
 
 ```
 root@debianvm:/usr/src/linux-source-4.9# cat samples/bpf/gioh1_user.c
