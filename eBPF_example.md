@@ -7,12 +7,18 @@
   * make a usr/include directory inside of kernel source tree and install user header files into it
 * clang >= v3.4.0
 * llam >= v3.7.1
-* ulimit -l 10240
+* ulimit -l 10240 (Debian)
+  * For Ubuntu, fix /etc/security/limits.conf
 * mount kernel debugfs: ``mount -t debugfs none /sys/kernel/debug/``
 
-## How to increase limit: if ulimit -l 10240 doesn't work
 
-If there is an error like ``failed to create a map: 1 Operation not permitted``...
+## How to increase rlimit
+
+**If rlimit is too low, loading program or creating map fails without any error message (kernel v4.4).**
+
+### max open files
+
+If there is an error like ``failed to create a map: 1 Operation not permitted``, we should increase "maximum number of open file" like following.
 
 1. /etc/security/limits.conf 
 ```
@@ -30,11 +36,61 @@ gurugio@giohnote:~/kernel/linux-source-4.4.0$ ulimit -n
 10240
 ```
 
+### max locked memory
+
+Kernel uses locked memory to create map.
+So we should increase max size of locked memory.
+
+1. add /etc/security/limits.conf
+```
+*               soft    memlock           unlimited
+*               hard    memlock           unlimited
+```
+
+2. or use ulimit command
+```
+## Show the current Hard limit for "memlock"
+$ ulimit -H -l
+64
+
+## Show the current Soft limit for "memlock"
+$ ulimit -S -l
+64
+
+## Set the current Soft "memlock" limit to 48KiB
+$ ulimit -H -l 1024
+$ ulimit -S -l 1024
+```
+
+How to check new setup.
+```
+root@pserver:~/hdd/linux-pserver-future# ulimit -a
+core file size          (blocks, -c) 0
+data seg size           (kbytes, -d) unlimited
+scheduling priority             (-e) 0
+file size               (blocks, -f) unlimited
+pending signals                 (-i) 3948
+max locked memory       (kbytes, -l) 1024
+max memory size         (kbytes, -m) unlimited
+open files                      (-n) 65536
+pipe size            (512 bytes, -p) 8
+POSIX message queues     (bytes, -q) 819200
+real-time priority              (-r) 0
+stack size              (kbytes, -s) 8192
+cpu time               (seconds, -t) unlimited
+max user processes              (-u) 3948
+virtual memory          (kbytes, -v) unlimited
+file locks                      (-x) unlimited
+```
+
+
 # build
 
 Do ``make samples/bpf/``
 
 Fix Makefile of v4.4
+* change the path of llc in Makefile
+* clang should be in $PATH
 ```
 # point this to your LLVM backend with bpf support
 #LLC=$(srctree)/tools/bpf/llvm/bld/Debug+Asserts/bin/llc
@@ -54,6 +110,33 @@ gurugio@giohnote:~/kernel/linux-source-4.4.0$ sudo ./samples/bpf/tracex1
 
             ping-5802  [000] d.s1  1135.435228: : skb ffff88021576a300 len 84
             ping-5802  [000] d.s1  1135.435273: : skb ffff88021576bb00 len 84
+```
+
+```
+root@pserver:~/hdd/linux-pserver-future# samples/bpf/tracex2
+location 0xffffffff8178433d count 1
+
+5000000+0 records in
+5000000+0 records out
+2560000000 bytes (2.6 GB) copied, 1.76873 s, 1.4 GB/s
+location 0xffffffff8178433d count 2
+
+location 0xffffffff8178433d count 3
+
+location 0xffffffff8178433d count 4
+
+
+pid 1333 cmd sshd uid 0
+           syscall write() stats
+     byte_size       : count     distribution
+       1 -> 1        : 0        |                                      |
+       2 -> 3        : 0        |                                      |
+       4 -> 7        : 0        |                                      |
+       8 -> 15       : 0        |                                      |
+      16 -> 31       : 0        |                                      |
+      32 -> 63       : 0        |                                      |
+      64 -> 127      : 4        |************************************* |
+     128 -> 255      : 1        |********                              |
 ```
 
 # example source.
