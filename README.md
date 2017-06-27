@@ -1,5 +1,27 @@
 # Tips for Linux kernel & driver development
 
+
+Kernel compile error with GCC-6.x: "code model kernel does not support PIC mode"
+```
+diff --git a/Makefile b/Makefile
+index dda982c..f96b174 100644
+--- a/Makefile
++++ b/Makefile
+@@ -608,6 +608,12 @@ endif # $(dot-config)
+ # Defaults to vmlinux, but the arch makefile usually adds further targets
+ all: vmlinux
+ 
++# force no-pie for distro compilers that enable pie by default
++KBUILD_CFLAGS += $(call cc-option, -fno-pie)
++KBUILD_CFLAGS += $(call cc-option, -no-pie)
++KBUILD_AFLAGS += $(call cc-option, -fno-pie)
++KBUILD_CPPFLAGS += $(call cc-option, -fno-pie)
++
+ # The arch Makefile can set ARCH_{CPP,A,C}FLAGS to override the default
+ # values of the respective KBUILD_* variables
+ ARCH_CPPFLAGS :=
+ ```
+
 Keep ssh connection from being frozen: add following lines in /etc/ssh/sshd_config
 ```
 --------- client side ----------
