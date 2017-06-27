@@ -3,12 +3,14 @@
 # Preparation
 * install libelf-dev libssl-dev
 * install kernel headers into /usr/include/linux: make headers_install
+  * ``samples/bpf/test_verifier.c:12:23: fatal error: linux/bpf.h: No such file or directory``
+  * make a usr/include directory inside of kernel source tree and install user header files into it
 * clang >= v3.4.0
 * llam >= v3.7.1
 * ulimit -l 10240
 * mount kernel debugfs: ``mount -t debugfs none /sys/kernel/debug/``
 
-# How to increase limit: if ulimit -l 10240 doesn't work
+## How to increase limit: if ulimit -l 10240 doesn't work
 
 If there is an error like ``failed to create a map: 1 Operation not permitted``...
 
