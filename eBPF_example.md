@@ -1,12 +1,14 @@
 
 
 # Preparation
+* check kernel versions of source tree and system
+  * fail to load kernel program
 * install libelf-dev libssl-dev
-* install kernel headers into /usr/include/linux: make headers_install
+* install kernel headers into /usr/include/linux: ``make headers_install``
   * ``samples/bpf/test_verifier.c:12:23: fatal error: linux/bpf.h: No such file or directory``
   * make a usr/include directory inside of kernel source tree and install user header files into it
-* clang >= v3.4.0
-* llam >= v3.7.1
+* clang >= v3.4.0 and llam >= v3.7.1
+  * download llvm package from llvm.org, no need to install
 * ulimit -l 10240 (Debian)
   * For Ubuntu, fix /etc/security/limits.conf
 * mount kernel debugfs: ``mount -t debugfs none /sys/kernel/debug/``
@@ -92,9 +94,30 @@ Fix Makefile of v4.4
 * change the path of llc in Makefile
 * clang should be in $PATH
 ```
-# point this to your LLVM backend with bpf support
-#LLC=$(srctree)/tools/bpf/llvm/bld/Debug+Asserts/bin/llc
-LLC=llc
+diff --git a/samples/bpf/Makefile b/samples/bpf/Makefile
+index edd638b..cabdb29 100644
+--- a/samples/bpf/Makefile
++++ b/samples/bpf/Makefile
+@@ -65,15 +65,16 @@ HOSTLOADLIBES_trace_output += -lelf -lrt
+ HOSTLOADLIBES_lathist += -lelf
+ 
+ # point this to your LLVM backend with bpf support
+-LLC=$(srctree)/tools/bpf/llvm/bld/Debug+Asserts/bin/llc
++#LLC=$(srctree)/tools/bpf/llvm/bld/Debug+Asserts/bin/llc
++LLC=/home/gkim/llvm/bin/llc
+ 
+ # asm/sysreg.h inline assmbly used by it is incompatible with llvm.
+ # But, ehere is not easy way to fix it, so just exclude it since it is
+ # useless for BPF samples.
+ $(obj)/%.o: $(src)/%.c
+-       clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
++       /home/gkim/llvm/bin/clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
+                -D__KERNEL__ -D__ASM_SYSREG_H -Wno-unused-value -Wno-pointer-sign \
+                -O2 -emit-llvm -c $< -o -| $(LLC) -march=bpf -filetype=obj -o $@
+-       clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
++       /home/gkim/llvm/bin/clang $(NOSTDINC_FLAGS) $(LINUXINCLUDE) $(EXTRA_CFLAGS) \
+                -D__KERNEL__ -D__ASM_SYSREG_H -Wno-unused-value -Wno-pointer-sign \
+                -O2 -emit-llvm -c $< -o -| $(LLC) -march=bpf -filetype=asm -o $@.s
 ```
 
 Run each sample program.
