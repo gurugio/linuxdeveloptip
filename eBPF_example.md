@@ -1,4 +1,5 @@
 
+*This is based on v4.4. The newer version should be different and have less restriction.*
 
 # Preparation
 * check kernel versions of source tree and system
