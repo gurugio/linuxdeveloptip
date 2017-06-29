@@ -2,7 +2,7 @@
 *This is based on v4.4. The newer version should be different and have less restriction.*
 
 # Preparation
-* check kernel versions of source tree and system
+* kernel versions of source tree and system MUST be same
   * fail to load kernel program
 * install libelf-dev libssl-dev
 * install kernel headers into /usr/include/linux: ``make headers_install``
