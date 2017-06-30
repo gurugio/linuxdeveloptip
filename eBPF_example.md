@@ -304,9 +304,10 @@ u32 _version SEC("version") = LINUX_VERSION_CODE;
 
 ## result
 
-It prints latency of each requests of all disk.
+It prints the statistics of latency of each requests of all disk.
 * "id=fd00010" is device number of a disk, (253,16)
 * "read X X X" is latency of read request, 0~10ms, 10~100ms, >100ms
+  * "read 0 1 0" means: no request took 0~10ms, 1 request took 10~100ms, no request took >100ms to be finished.
 
 ```
 root@pserver:~/hdd/linux-pserver-future# ./samples/bpf/biolatency 
