@@ -165,6 +165,8 @@ pid 1333 cmd sshd uid 0
 
 # example source.
 
+print start time and finish time of a request.
+
 ```
 root@debianvm:/usr/src/linux-source-4.9# cat samples/bpf/gioh1_user.c
 #include <stdio.h>
