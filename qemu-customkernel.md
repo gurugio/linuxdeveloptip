@@ -296,3 +296,124 @@ mac=$(printf "DE:AD:BE:EF:%02X:%02X" $((RANDOM%256)) $((RANDOM%256)))
 -netdev tap,id=net0,script=/etc/qemu-ifup-br \
 -nographic
 ```
+
+# Final script to run VMs
+
+Following is the current script to run my VMs.
+
+```
+#!/bin/bash
+
+mac=$(printf "DE:AD:BE:%02X:%02X:1" $((RANDOM%256)) $((RANDOM%256)))
+
+run_servers()
+{
+	local pserver_cnt=1
+	local storage_cnt=2
+
+	qemu-system-x86_64 -M pc -enable-kvm -m 2048 -smp 4 -name pb-pserver \
+	-uuid e4b93f3f-e301-3a0b-1829-582cf34a6810 \
+	-monitor telnet:0.0.0.0:9400,server,nowait -rtc base=utc \
+	-netdev tap,ifname=tap0,id=mynet0,script=no -device e1000,netdev=mynet0,mac=${mac}0 \
+	-drive file=./debian8.2-pserver.img,if=none,id=drive-virtio-disk1,format=raw,cache=none \
+	-device virtio-blk-pci,bus=pci.0,addr=0x6,drive=drive-virtio-disk1,id=virtio-disk1 \
+    -drive file=./disk_ps.img,if=none,id=drive-virtio-disk2,format=raw,cache=none \
+    -device virtio-blk-pci,bus=pci.0,addr=0x7,drive=drive-virtio-disk2,id=virtio-disk2 \
+	-device isa-serial,chardev=serial0 -k en-us -vga cirrus \
+	-chardev pty,id=serial0 \
+	-vnc 0.0.0.0:0 &
+
+	for (( i=1; i<=${storage_cnt}; i++))
+	do
+		qemu-system-x86_64 -M pc -enable-kvm -m 1024 -smp 2 -name pb-storage${i} \
+		-uuid f4b93f3f-e301-3a0b-1829-582cf34a681${i} \
+		-monitor telnet:0.0.0.0:950${i},server,nowait -rtc base=utc \
+		-netdev tap,ifname=tap${i},id=mynet0,script=no -device e1000,netdev=mynet0,mac=$mac${i} \
+		-drive file=./debian8.2-storage${i}.img,if=none,id=drive-virtio-disk1,format=raw,cache=none \
+        -device virtio-blk-pci,bus=pci.0,addr=0x6,drive=drive-virtio-disk1,id=virtio-disk1 \
+		-drive file=./disk_st${i}.img,if=none,id=drive-virtio-disk2,format=raw,cache=none \
+		-device virtio-blk-pci,bus=pci.0,addr=0x7,drive=drive-virtio-disk2,id=virtio-disk2 \
+		-device isa-serial,chardev=serial0 -k en-us -vga cirrus \
+		-chardev pty,id=serial0 \
+		-vnc 0.0.0.0:${i} &
+	done
+}
+
+setup_br0()
+{
+	local tap_cnt=$1
+	#brctl addbr br0
+	#ip link set dev br0 up
+	#ip -4 addr del 192.168.67.54/24 dev eno1
+	for (( i=0; i<${tap_cnt}; i++))
+	do
+		tunctl -b -t tap${i}
+		ip link set dev tap${i} up
+		brctl addif br0 tap${i}
+	done
+	#brctl addif br0 eno1
+    # only when use dhcp
+	#dhclient br0
+}
+
+setup_br0 5
+run_servers
+
+
+#!/bin/bash
+
+mac=$(printf "DE:AD:BE:%02X:%02X:1" $((RANDOM%256)) $((RANDOM%256)))
+
+run_servers()
+{
+	local pserver_cnt=1
+	local storage_cnt=2
+
+	qemu-system-x86_64 -M pc -enable-kvm -m 2048 -smp 4 -name pb-pserver \
+	-uuid e4b93f3f-e301-3a0b-1829-582cf34a6810 \
+	-monitor telnet:0.0.0.0:9400,server,nowait -rtc base=utc \
+	-netdev tap,ifname=tap0,id=mynet0,script=no -device e1000,netdev=mynet0,mac=${mac}0 \
+	-drive file=./debian8.2-pserver.img,if=none,id=drive-virtio-disk1,format=raw,cache=none \
+	-device virtio-blk-pci,bus=pci.0,addr=0x6,drive=drive-virtio-disk1,id=virtio-disk1 \
+    -drive file=./disk_ps.img,if=none,id=drive-virtio-disk2,format=raw,cache=none \
+    -device virtio-blk-pci,bus=pci.0,addr=0x7,drive=drive-virtio-disk2,id=virtio-disk2 \
+	-device isa-serial,chardev=serial0 -k en-us -vga cirrus \
+	-chardev pty,id=serial0 \
+	-vnc 0.0.0.0:0 &
+
+	for (( i=1; i<=${storage_cnt}; i++))
+	do
+		qemu-system-x86_64 -M pc -enable-kvm -m 1024 -smp 2 -name pb-storage${i} \
+		-uuid f4b93f3f-e301-3a0b-1829-582cf34a681${i} \
+		-monitor telnet:0.0.0.0:950${i},server,nowait -rtc base=utc \
+		-netdev tap,ifname=tap${i},id=mynet0,script=no -device e1000,netdev=mynet0,mac=$mac${i} \
+		-drive file=./debian8.2-storage${i}.img,if=none,id=drive-virtio-disk1,format=raw,cache=none \
+        -device virtio-blk-pci,bus=pci.0,addr=0x6,drive=drive-virtio-disk1,id=virtio-disk1 \
+		-drive file=./disk_st${i}.img,if=none,id=drive-virtio-disk2,format=raw,cache=none \
+		-device virtio-blk-pci,bus=pci.0,addr=0x7,drive=drive-virtio-disk2,id=virtio-disk2 \
+		-device isa-serial,chardev=serial0 -k en-us -vga cirrus \
+		-chardev pty,id=serial0 \
+		-vnc 0.0.0.0:${i} &
+	done
+}
+
+setup_br0()
+{
+	local tap_cnt=$1
+	#brctl addbr br0
+	#ip link set dev br0 up
+	#ip -4 addr del 192.168.67.54/24 dev eno1
+	for (( i=0; i<${tap_cnt}; i++))
+	do
+		tunctl -b -t tap${i}
+		ip link set dev tap${i} up
+		brctl addif br0 tap${i}
+	done
+	#brctl addif br0 eno1
+    # only when use dhcp
+	#dhclient br0
+}
+
+setup_br0 5
+run_servers
+```
