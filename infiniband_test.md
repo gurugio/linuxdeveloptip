@@ -91,7 +91,7 @@ install packages
 * ibverbs-driver-mlx4
 
 server:
-* ``# ib_send_bw -a -d mlx4_0 -i 2``
+* ``# ib_send_bw -a -d mlx4_0 -i 1``
 * -a: all sizes
 * -c UD: connection type
 * -d: IB device
