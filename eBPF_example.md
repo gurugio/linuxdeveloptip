@@ -633,6 +633,122 @@ filename=/dev/nullb0
 root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# fio fio.conf 
 ```
 
+## fix biolatency_user.c not to print any message on terminal
+
+```
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <libelf.h>
+#include <gelf.h>
+#include <errno.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <linux/bpf.h>
+#include <linux/filter.h>
+#include <linux/perf_event.h>
+#include <sys/syscall.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <poll.h>
+#include <ctype.h>
+#include <sched.h>
+
+
+#include "libbpf.h"
+#include "bpf_load.h"
+
+#define DEBUGFS "/sys/kernel/debug/tracing/"
+
+
+struct lat_table {
+	/*
+	 * bpf program use restrict C language
+	 * - pointer must be read by bpf_probe_read()
+	 * - writing to pointer is not possible
+	 * - array and array of pointer cannot be here: counters[rw][15]
+	 */
+	__u64 counters_r_less_10;
+	__u64 counters_r_10_100;
+	__u64 counters_r_more_100;
+	__u64 counters_w_less_10;
+	__u64 counters_w_10_100;
+	__u64 counters_w_more_100;
+};
+
+void show_trace(void)
+{
+	int trace_fd;
+	__u32 key = 0, next_key;
+	struct lat_table table;
+
+	trace_fd = open(DEBUGFS "trace_pipe", O_RDONLY, 0);
+	if (trace_fd < 0)
+		exit(1);
+
+	while (1) {
+		static char buf[4096];
+		ssize_t sz;
+
+		sz = read(trace_fd, buf, sizeof(buf));
+		if (sz > 0) {
+			buf[sz] = 0;
+			puts(buf);
+		}
+
+		/* device number of virtblk: 253,0 */
+		key = 0xfd00000;
+
+		/* map_fd is array of fd of maps.
+		 * For example, latency_map is the second maps
+		 * in biolatency_kern.c file.
+		 * So fd according to latency_map is map_fd[1].
+		 */
+		while (bpf_map_get_next_key(map_fd[1], &key, &next_key) == 0) {
+			bpf_map_lookup_elem(map_fd[1], &key, &table);
+			printf("[ id=%x read %llu %llu %llu, write %llu %llu %llu]\n",
+			       key,
+			       table.counters_r_less_10,
+			       table.counters_r_10_100,
+			       table.counters_r_more_100,
+			       table.counters_w_less_10,
+			       table.counters_w_10_100,
+			       table.counters_w_more_100);
+			key = next_key;
+		}
+		printf("\n\n");
+	}
+}
+
+
+int main(int ac, char **argv)
+{
+	char filename[256];
+
+	snprintf(filename, sizeof(filename), "%s_kern.o", argv[0]);
+
+	/* if loading bpf fails, increase rlimit with:
+	 * ulimit -l 10240
+	 * ulimit -n 65536
+	 */
+	if (load_bpf_file(filename)) {
+		printf("fail to load bpf file: %s", bpf_log_buf);
+		return 1;
+	}
+
+	//show_trace();
+	/* read trace message infinitely */
+	while (1) {
+	 	sleep(100);
+	}
+	return 0;
+}
+```
+
+
 ## before bpf
 
 
