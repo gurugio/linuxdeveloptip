@@ -589,8 +589,19 @@ u32 _version SEC("version") = LINUX_VERSION_CODE;
 ```
 
 
-# Performance degradation
+# Performance degradation (v4.10.0-26)
 
+## Ubuntu 17.04 with kernel version v4.10.0 
+
+```
+root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# uname -a
+Linux ws00837 4.10.0-26-generic #30-Ubuntu SMP Tue Jun 27 09:30:12 UTC 2017 x86_64 x86_64 x86_64 GNU/Linux
+root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# cat /etc/lsb-release 
+DISTRIB_ID=Ubuntu
+DISTRIB_RELEASE=17.04
+DISTRIB_CODENAME=zesty
+DISTRIB_DESCRIPTION="Ubuntu 17.04"
+```
 
 ## setup null_blk module
 
