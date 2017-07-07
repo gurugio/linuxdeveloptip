@@ -636,5 +636,163 @@ root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# fio fio.conf
 ## before bpf
 
 
+```
+root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# bash -x go.bash 
++ echo 3
++ fio fio.conf
+job: (g=0): rw=randrw, bs=512-64K/512-64K/512-64K, ioengine=libaio, iodepth=64
+...
+fio-2.16
+Starting 4 processes
+Jobs: 4 (f=4): [m(4)] [100.0% done] [13315MB/13308MB/0KB /s] [1591K/1591K/0 iops] [eta 00m:00s]
+job: (groupid=0, jobs=4): err= 0: pid=16760: Fri Jul  7 17:27:45 2017
+  Description  : [Emulation of Storage Server Access Pattern]
+  read : io=136315MB, bw=13630MB/s, iops=1581.3K, runt= 10001msec
+  write: io=136474MB, bw=13646MB/s, iops=1581.7K, runt= 10001msec
+  cpu          : usr=29.57%, sys=70.30%, ctx=15611, majf=0, minf=34
+  IO depths    : 1=0.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=100.0%
+     submit    : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     issued    : total=r=15813620/w=15818308/d=0, short=r=0/w=0/d=0, drop=r=0/w=0/d=0
+     latency   : target=0, window=0, percentile=100.00%, depth=64
 
-## 
+Run status group 0 (all jobs):
+   READ: io=136315MB, aggrb=13630MB/s, minb=13630MB/s, maxb=13630MB/s, mint=10001msec, maxt=10001msec
+  WRITE: io=136474MB, aggrb=13646MB/s, minb=13646MB/s, maxb=13646MB/s, mint=10001msec, maxt=10001msec
+
+Disk stats (read/write):
+  nullb0: ios=8414306/8417055, merge=7198075/7199570, ticks=122628/122148, in_queue=249776, util=98.83%
++ echo 3
++ fio fio.conf
+job: (g=0): rw=randrw, bs=512-64K/512-64K/512-64K, ioengine=libaio, iodepth=64
+...
+fio-2.16
+Starting 4 processes
+Jobs: 4 (f=4): [m(4)] [100.0% done] [13082MB/13080MB/0KB /s] [1563K/1564K/0 iops] [eta 00m:00s]
+job: (groupid=0, jobs=4): err= 0: pid=16774: Fri Jul  7 17:27:55 2017
+  Description  : [Emulation of Storage Server Access Pattern]
+  read : io=136536MB, bw=13652MB/s, iops=1583.9K, runt= 10001msec
+  write: io=136693MB, bw=13668MB/s, iops=1584.4K, runt= 10001msec
+  cpu          : usr=30.04%, sys=69.80%, ctx=14752, majf=0, minf=39
+  IO depths    : 1=0.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=100.0%
+     submit    : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     issued    : total=r=15839622/w=15844914/d=0, short=r=0/w=0/d=0, drop=r=0/w=0/d=0
+     latency   : target=0, window=0, percentile=100.00%, depth=64
+
+Run status group 0 (all jobs):
+   READ: io=136536MB, aggrb=13652MB/s, minb=13652MB/s, maxb=13652MB/s, mint=10001msec, maxt=10001msec
+  WRITE: io=136693MB, aggrb=13668MB/s, minb=13668MB/s, maxb=13668MB/s, mint=10001msec, maxt=10001msec
+
+Disk stats (read/write):
+  nullb0: ios=8436286/8438950, merge=7216617/7218577, ticks=121888/123236, in_queue=247228, util=98.03%
++ echo 3
++ fio fio.conf
+job: (g=0): rw=randrw, bs=512-64K/512-64K/512-64K, ioengine=libaio, iodepth=64
+...
+fio-2.16
+Starting 4 processes
+Jobs: 4 (f=4): [m(4)] [100.0% done] [13012MB/13034MB/0KB /s] [1557K/1560K/0 iops] [eta 00m:00s]
+job: (groupid=0, jobs=4): err= 0: pid=16790: Fri Jul  7 17:28:06 2017
+  Description  : [Emulation of Storage Server Access Pattern]
+  read : io=138497MB, bw=13848MB/s, iops=1607.4K, runt= 10001msec
+  write: io=138660MB, bw=13865MB/s, iops=1608.1K, runt= 10001msec
+  cpu          : usr=29.89%, sys=69.98%, ctx=15264, majf=0, minf=31
+  IO depths    : 1=0.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=100.0%
+     submit    : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     issued    : total=r=16075589/w=16081715/d=0, short=r=0/w=0/d=0, drop=r=0/w=0/d=0
+     latency   : target=0, window=0, percentile=100.00%, depth=64
+
+Run status group 0 (all jobs):
+   READ: io=138497MB, aggrb=13848MB/s, minb=13848MB/s, maxb=13848MB/s, mint=10001msec, maxt=10001msec
+  WRITE: io=138660MB, aggrb=13865MB/s, minb=13865MB/s, maxb=13865MB/s, mint=10001msec, maxt=10001msec
+
+Disk stats (read/write):
+  nullb0: ios=8554673/8557790, merge=7318157/7320348, ticks=121004/121888, in_queue=245948, util=99.02%
+
+```
+
+## after bpf
+
+```
++ fio fio.conf
+job: (g=0): rw=randrw, bs=512-64K/512-64K/512-64K, ioengine=libaio, iodepth=64
+...
+fio-2.16
+Starting 4 processes
+Jobs: 4 (f=4): [m(4)] [100.0% done] [9905MB/9902MB/0KB /s] [1167K/1165K/0 iops] [eta 00m:00s] 
+job: (groupid=0, jobs=4): err= 0: pid=16810: Fri Jul  7 17:28:16 2017
+  Description  : [Emulation of Storage Server Access Pattern]
+  read : io=100011MB, bw=10000MB/s, iops=1149.7K, runt= 10001msec
+  write: io=100127MB, bw=10012MB/s, iops=1149.7K, runt= 10001msec
+  cpu          : usr=22.82%, sys=77.05%, ctx=17738, majf=0, minf=29
+  IO depths    : 1=0.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=100.0%
+     submit    : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     issued    : total=r=11497837/w=11497611/d=0, short=r=0/w=0/d=0, drop=r=0/w=0/d=0
+     latency   : target=0, window=0, percentile=100.00%, depth=64
+
+Run status group 0 (all jobs):
+   READ: io=100011MB, aggrb=10000MB/s, minb=10000MB/s, maxb=10000MB/s, mint=10001msec, maxt=10001msec
+  WRITE: io=100127MB, aggrb=10012MB/s, minb=10012MB/s, maxb=10012MB/s, mint=10001msec, maxt=10001msec
+
+Disk stats (read/write):
+  nullb0: ios=6123579/6123209, merge=5236715/5236455, ticks=133884/133692, in_queue=273224, util=99.20%
++ echo 3
++ fio fio.conf
+job: (g=0): rw=randrw, bs=512-64K/512-64K/512-64K, ioengine=libaio, iodepth=64
+...
+fio-2.16
+Starting 4 processes
+Jobs: 4 (f=4): [m(4)] [100.0% done] [10034MB/10039MB/0KB /s] [1183K/1181K/0 iops] [eta 00m:00s]
+job: (groupid=0, jobs=4): err= 0: pid=16824: Fri Jul  7 17:28:27 2017
+  Description  : [Emulation of Storage Server Access Pattern]
+  read : io=101393MB, bw=10138MB/s, iops=1165.1K, runt= 10001msec
+  write: io=101512MB, bw=10150MB/s, iops=1166.3K, runt= 10001msec
+  cpu          : usr=21.43%, sys=78.46%, ctx=17819, majf=0, minf=31
+  IO depths    : 1=0.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=100.0%
+     submit    : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     issued    : total=r=11660778/w=11661198/d=0, short=r=0/w=0/d=0, drop=r=0/w=0/d=0
+     latency   : target=0, window=0, percentile=100.00%, depth=64
+
+Run status group 0 (all jobs):
+   READ: io=101393MB, aggrb=10138MB/s, minb=10138MB/s, maxb=10138MB/s, mint=10001msec, maxt=10001msec
+  WRITE: io=101512MB, aggrb=10150MB/s, minb=10150MB/s, maxb=10150MB/s, mint=10001msec, maxt=10001msec
+
+Disk stats (read/write):
+  nullb0: ios=6211522/6211511, merge=5312289/5311734, ticks=138884/140316, in_queue=285192, util=99.28%
++ echo 3
++ fio fio.conf
+job: (g=0): rw=randrw, bs=512-64K/512-64K/512-64K, ioengine=libaio, iodepth=64
+...
+fio-2.16
+Starting 4 processes
+Jobs: 4 (f=4): [m(4)] [100.0% done] [9766MB/9771MB/0KB /s] [1150K/1148K/0 iops] [eta 00m:00s] 
+job: (groupid=0, jobs=4): err= 0: pid=16838: Fri Jul  7 17:28:37 2017
+  Description  : [Emulation of Storage Server Access Pattern]
+  read : io=99847MB, bw=9983.7MB/s, iops=1147.7K, runt= 10001msec
+  write: io=99960MB, bw=9995.3MB/s, iops=1147.7K, runt= 10001msec
+  cpu          : usr=22.39%, sys=77.48%, ctx=16992, majf=0, minf=38
+  IO depths    : 1=0.0%, 2=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, >=64=100.0%
+     submit    : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     complete  : 0=0.0%, 4=0.0%, 8=0.0%, 16=0.0%, 32=0.0%, 64=100.0%, >=64=0.0%
+     issued    : total=r=11478058/w=11477966/d=0, short=r=0/w=0/d=0, drop=r=0/w=0/d=0
+     latency   : target=0, window=0, percentile=100.00%, depth=64
+
+Run status group 0 (all jobs):
+   READ: io=99847MB, aggrb=9983.7MB/s, minb=9983.7MB/s, maxb=9983.7MB/s, mint=10001msec, maxt=10001msec
+  WRITE: io=99960MB, aggrb=9995.3MB/s, minb=9995.3MB/s, maxb=9995.3MB/s, mint=10001msec, maxt=10001msec
+
+Disk stats (read/write):
+  nullb0: ios=6107827/6107585, merge=5223197/5223228, ticks=136116/135452, in_queue=277376, util=99.07%
+
+```
+
+## conclusion
+
+performace drop = 27%
+* before: 13600MB/s
+* after: 10000MB/s
+
