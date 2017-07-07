@@ -588,3 +588,53 @@ char _license[] SEC("license") = "GPL";
 u32 _version SEC("version") = LINUX_VERSION_CODE;
 ```
 
+
+# Performance degradation
+
+
+## setup null_blk module
+
+1. build null_blk.ko 
+```make drivers/block/null_blk.ko queue_mode=2
+or 
+insmod /lib/modules/4.10.0-26-generic/kernel/drivers/block/null_blk.ko queue_mode=2
+```
+
+2. device files
+```
+root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# ls /dev/nullb*
+/dev/nullb0  /dev/nullb1  /dev/nullb1p1  /dev/nullb1p3
+```
+
+3. run fio with following configuration
+```
+root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# cat fio.conf 
+[global]
+description=Emulation of Storage Server Access Pattern
+bssplit=512/20:1k/16:2k/9:4k/12:8k/19:16k/10:32k/8:64k/4
+fadvise_hint=0
+rw=randrw:2
+#rw=write
+direct=1
+
+ioengine=libaio
+iodepth=64
+iodepth_batch_submit=64
+iodepth_batch_complete=64
+numjobs=4
+gtod_reduce=1
+group_reporting=1
+
+time_based=1
+runtime=10
+
+[job]
+filename=/dev/nullb0
+root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# fio fio.conf 
+```
+
+## before bpf
+
+
+
+## 
