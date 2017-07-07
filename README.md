@@ -1,5 +1,11 @@
 # Tips for Linux kernel & driver development
 
+tip for strace: ALWAYS USE -f option
+* -f: trace all children
+* -f -p <PID>: trace all threads of <PID>
+```
+# strace -p <PID> -f
+```
 
 Kernel compile error with GCC-6.x: "code model kernel does not support PIC mode"
 ```
