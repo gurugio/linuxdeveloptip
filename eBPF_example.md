@@ -13,7 +13,9 @@
 * ulimit -l 10240 (Debian)
   * For Ubuntu, fix /etc/security/limits.conf
 * mount kernel debugfs: ``mount -t debugfs none /sys/kernel/debug/``
-
+* enable BPF JIT: ``$ sysctl net/core/bpf_jit_enable=1``
+  * better performance
+* reference: http://prototype-kernel.readthedocs.io/en/latest/bpf/troubleshooting.html
 
 ## How to increase rlimit
 
@@ -588,6 +590,287 @@ char _license[] SEC("license") = "GPL";
 u32 _version SEC("version") = LINUX_VERSION_CODE;
 ```
 
+# example using BPF_MAP_TYPE_PERCPU_HASH map
+
+```
+#include <linux/skbuff.h>
+#include <linux/netdevice.h>
+#include <uapi/linux/bpf.h>
+#include <linux/version.h>
+#include <linux/blkdev.h>
+#include "bpf_helpers.h"
+
+
+/*
+ * NEVER READ any field of a structure directly
+ */
+#define _(P) ({typeof(P) val = 0; bpf_probe_read(&val, sizeof(val), &P); val; })
+
+
+struct bpf_map_def SEC("maps") bio_latency_map = {
+	.type = BPF_MAP_TYPE_PERCPU_HASH,
+	.key_size = sizeof(long),
+	.value_size = sizeof(u64),
+	.max_entries = 65536,
+};
+
+void record_start(struct pt_regs *ctx)
+{
+	struct request *req;
+	long req_key;
+	u64 ktime_start = bpf_ktime_get_ns();
+
+	req = (struct request *)PT_REGS_PARM1(ctx);
+	req_key = (long)req;
+	bpf_map_update_elem(&bio_latency_map, &req_key, &ktime_start, BPF_ANY);
+}
+
+SEC("kprobe/blk_start_request")
+int bpf_prog1(struct pt_regs *ctx)
+{
+	record_start(ctx);
+	return 0;
+}
+
+SEC("kprobe/blk_mq_start_request")
+int bpf_prog2(struct pt_regs *ctx)
+{
+	record_start(ctx);
+	return 0;
+}
+
+struct lat_table {
+	/*
+	 * bpf program use restrict C language
+	 * - pointer must be read by bpf_probe_read()
+	 * - writing to pointer is not possible
+	 * - array and array of pointer cannot be here: counters[rw][15]
+	 */
+	u64 counters_r_less_10;
+	u64 counters_r_10_100;
+	u64 counters_r_more_100;
+	u64 counters_w_less_10;
+	u64 counters_w_10_100;
+	u64 counters_w_more_100;
+};
+
+
+struct bpf_map_def SEC("maps") latency_map = {
+	.type = BPF_MAP_TYPE_PERCPU_HASH,
+	.key_size = sizeof(u32),
+	.value_size = sizeof(struct lat_table),
+	 /* if it's too big, it will fail to load bpf program */
+	.max_entries = 1024,
+};
+
+SEC("kprobe/blk_account_io_done")
+int bpf_prog3(struct pt_regs *ctx)
+{
+	struct request *req = (struct request *)PT_REGS_PARM1(ctx);
+	long req_key = (long)req;
+	u64 ktime_end = bpf_ktime_get_ns();
+	char message[] = "ms=%d idx=%d\n";
+	u64 *ktime_start;
+	unsigned long ms;
+	int rw;
+	struct lat_table *table;
+	struct hd_struct *hdp;
+	dev_t dev;
+	int major, minor;
+	u32 dev_id;
+#if KERN_RW_MSG
+	char rw_msg[] = "id=%x rw=%d ms=%llu\n";
+#endif
+
+	ktime_start = bpf_map_lookup_elem(&bio_latency_map, &req_key);
+	if (!ktime_start) {
+		/* skip not traced request */
+		return 0;
+	}
+
+	ms = (ktime_end - *ktime_start) / 1000000L;
+	rw = (int)_(req->cmd_flags) & 1;
+	hdp = _(req->part);
+	dev_id = (u32)_(hdp->__dev.devt);
+	/* req is not necessary anymore */
+	bpf_map_delete_elem(&bio_latency_map, &req_key);
+
+	table = bpf_map_lookup_elem(&latency_map, &dev_id);
+	if (table) {
+		if (rw) {
+			if (ms < 10UL)
+				__sync_fetch_and_add((long *)&table->counters_w_less_10, 1);
+			else if (ms < 100UL)
+				__sync_fetch_and_add((long *)&table->counters_w_10_100, 1);
+			else
+				__sync_fetch_and_add((long *)&table->counters_w_more_100, 1);
+		} else {
+			if (ms < 10UL)
+				__sync_fetch_and_add((long *)&table->counters_r_less_10, 1);
+			else if (ms < 100UL)
+				__sync_fetch_and_add((long *)&table->counters_r_10_100, 1);
+			else
+				__sync_fetch_and_add((long *)&table->counters_r_more_100, 1);
+		}
+#if KERN_RW_MSG
+		bpf_trace_printk(rw_msg, sizeof(rw_msg), dev_id, rw, ms);
+#endif
+	} else {
+		struct lat_table clear;
+
+		memset(&clear, 0, sizeof(struct lat_table));
+		/* create table for dev_id device */
+		bpf_map_update_elem(&latency_map, &dev_id, &clear, BPF_NOEXIST);
+	}
+
+	return 0;
+}
+
+char _license[] SEC("license") = "GPL";
+u32 _version SEC("version") = LINUX_VERSION_CODE;
+root@ws00837:/usr/src/linux-source-4.10.0/linux-source-4.10.0# cat samples/bpf/biolatency_user.c
+#include <stdio.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <libelf.h>
+#include <gelf.h>
+#include <errno.h>
+#include <unistd.h>
+#include <string.h>
+#include <stdbool.h>
+#include <stdlib.h>
+#include <linux/bpf.h>
+#include <linux/filter.h>
+#include <linux/perf_event.h>
+#include <sys/syscall.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
+#include <poll.h>
+#include <ctype.h>
+#include <sched.h>
+
+
+#include "libbpf.h"
+#include "bpf_load.h"
+#include "bpf_util.h"
+
+#define DEBUGFS "/sys/kernel/debug/tracing/"
+
+
+struct lat_table {
+	/*
+	 * bpf program use restrict C language
+	 * - pointer must be read by bpf_probe_read()
+	 * - writing to pointer is not possible
+	 * - array and array of pointer cannot be here: counters[rw][15]
+	 */
+	__u64 counters_r_less_10;
+	__u64 counters_r_10_100;
+	__u64 counters_r_more_100;
+	__u64 counters_w_less_10;
+	__u64 counters_w_10_100;
+	__u64 counters_w_more_100;
+};
+
+void show_trace(void)
+{
+	__u32 key = 0, next_key;
+
+	/*
+	 * If map-type is PERCPU_*, return value from bpf_map_lookup_elem()
+	 * is array of data.
+	 */
+	unsigned int nr_cpus = bpf_num_possible_cpus();
+	struct lat_table tables[nr_cpus];
+
+#if KERN_RW_MSG
+	int trace_fd;
+	static char buf[4096];
+	ssize_t sz;
+
+	trace_fd = open(DEBUGFS "trace_pipe", O_RDONLY, 0);
+	if (trace_fd < 0)
+		exit(1);
+#endif
+	
+	while (1) {
+
+#if KERN_RW_MSG
+		sz = read(trace_fd, buf, sizeof(buf));
+		if (sz > 0) {
+			buf[sz] = 0;
+			puts(buf);
+		}
+#endif
+		/* device number of virtblk: 253,0 */
+		key = 0xfd00000;
+
+		/* map_fd is array of fd of maps.
+		 * For example, latency_map is the second maps
+		 * in biolatency_kern.c file.
+		 * So fd according to latency_map is map_fd[1].
+		 */
+		while (bpf_map_get_next_key(map_fd[1], &key, &next_key) == 0) {
+			__u64 sum_r_less_10 = 0;
+			__u64 sum_r_10_100  = 0;
+			__u64 sum_r_more_100 = 0;
+			__u64 sum_w_less_10 = 0;
+			__u64 sum_w_10_100  = 0;
+			__u64 sum_w_more_100 = 0;
+			int i;
+				
+			bpf_map_lookup_elem(map_fd[1], &key, &tables);
+
+			for (i = 0; i < nr_cpus; i++) {
+				sum_r_less_10  += tables[i].counters_r_less_10;
+				sum_r_10_100   += tables[i].counters_r_10_100;
+				sum_r_more_100 += tables[i].counters_r_more_100;
+				sum_w_less_10  += tables[i].counters_w_less_10;
+				sum_w_10_100   += tables[i].counters_w_10_100;
+				sum_w_more_100 += tables[i].counters_w_more_100;
+			}
+			printf("[ id=%x read %llu %llu %llu, write %llu %llu %llu]\n",
+			       key,
+			       sum_r_less_10,
+			       sum_r_10_100,
+			       sum_r_more_100,
+			       sum_w_less_10,
+			       sum_w_10_100,
+			       sum_w_more_100);
+			key = next_key;
+		}
+		printf("\n\n");
+	}
+}
+
+
+int main(int ac, char **argv)
+{
+	char filename[256];
+
+	snprintf(filename, sizeof(filename), "%s_kern.o", argv[0]);
+
+	/* if loading bpf fails, increase rlimit with:
+	 * ulimit -l 10240
+	 * ulimit -n 65536
+	 */
+	if (load_bpf_file(filename)) {
+		printf("fail to load bpf file: %s", bpf_log_buf);
+		return 1;
+	}
+#if KERN_RW_MSG	
+	/* read trace message infinitely */
+	show_trace();
+#endif
+	while (1) {
+		/* do NOTHING */
+	 	sleep(100);
+	}
+	return 0;
+}
+
+```
 
 # Performance degradation (v4.10.0-26)
 
