@@ -923,3 +923,8 @@ performace drop = 27%
 * before: 13600MB/s
 * after: 10000MB/s
 
+I changed the type of map from HASH to PERCPU_HASH but performance drop remained.
+* before: 12000MB/s
+* after: 9300MB/s
+
+
