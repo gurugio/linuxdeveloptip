@@ -921,10 +921,12 @@ Disk stats (read/write):
 
 performace drop = 27%
 * before: 13600MB/s
-* after: 10000MB/s
+* after:  10000MB/s
 
 I changed the type of map from HASH to PERCPU_HASH and LRU_PERCPU_HASH but performance drop remained.
 * before: 12000MB/s
-* after: 9300MB/s
+* after:   9300MB/s
 
-
+Enabling bpf JIT can increase a little bit performance.: http://prototype-kernel.readthedocs.io/en/latest/bpf/troubleshooting.html
+* before: 12000MB/s
+* after:   9500MB/s
