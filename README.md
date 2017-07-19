@@ -1,5 +1,23 @@
 # Tips for Linux kernel & driver development
 
+delay function for C language
+* not sleep
+* there is no delay in glibc, but it has CLOCKS_PER_SEC and time() function.
+```
+#include <time.h>
+
+void delay(int milliseconds)
+{
+        long pause;
+	clock_t now,then;
+
+	pause = milliseconds*(CLOCKS_PER_SEC/1000);
+	now = then = clock();
+	while( (now-then) < pause )
+		now = clock();
+}
+```
+
 tip for strace: ALWAYS USE -f option
 * -f: trace all children
 * -f -p <PID>: trace all threads of <PID>
