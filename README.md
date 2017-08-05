@@ -1,5 +1,16 @@
 # Tips for Linux kernel & driver development
 
+build .deb package of kernel
+```
+make -j `getconf _NPROCESSORS_ONLN` deb-pkg LOCALVERSION=-custom
+cd ..
+sudo dpkg -i linux-firmware-image-4.11.1-custom_4.11.1-custom-1_amd64.deb
+sudo dpkg -i linux-libc-dev_4.11.1-custom-1_amd64.deb
+sudo dpkg -i linux-headers-4.11.1-custom_4.11.1-custom-1_amd64.deb
+sudo dpkg -i linux-image-4.11.1-custom-dbg_4.11.1-custom-1_amd64.deb
+sudo dpkg -i linux-image-4.11.1-custom_4.11.1-custom-1_amd64.deb
+```
+
 delay function for C language
 * not sleep
 * there is no delay in glibc, but it has CLOCKS_PER_SEC and time() function.
