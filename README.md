@@ -1,5 +1,14 @@
 # Tips for Linux kernel & driver development
 
+find kernel config option at once
+```
+make menuconfig
+press '/' to search the option
+press number of the option
+(1)   -> Compile-time checks and compiler options  
+ (2) -> Kernel hacking  
+```
+
 build .deb package of kernel
 ```
 make -j `getconf _NPROCESSORS_ONLN` deb-pkg LOCALVERSION=-custom
