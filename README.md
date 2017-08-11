@@ -21,7 +21,7 @@ sudo dpkg -i linux-image-4.11.1-custom_4.11.1-custom-1_amd64.deb
 ```
 
 delay function for C language
-* not sleep
+* not sleep, no context switch
 * there is no delay in glibc, but it has CLOCKS_PER_SEC and time() function.
 ```
 #include <time.h>
