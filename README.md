@@ -1,5 +1,12 @@
 # Tips for Linux kernel & driver development
 
+resolve failure of 'git am'
+```
+$ git am --reject patch.patch
+source.c.rej is generated.
+resolve source.c file
+```
+
 find kernel config option at once
 ```
 make menuconfig
