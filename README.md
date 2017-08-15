@@ -1,11 +1,15 @@
 # Tips for Linux kernel & driver development
 
+check source difference between two branches
+* ``git diff -w branchAAA branchBBB path``
+* ``git diff -w origin/master feature/fix-lock drivers/scsi``
+* use -w to ignore spaces
+* ``git diff commit1234 commit5677 [path]``
+
 resolve failure of 'git am'
-```
-$ git am --reject patch.patch
-source.c.rej is generated.
-resolve source.c file
-```
+* ``git am --reject patch.patch``
+* source.c.rej is generated.
+* resolve only source.c file
 
 find kernel config option at once
 ```
