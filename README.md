@@ -1,5 +1,24 @@
 # Tips for Linux kernel & driver development
 
+kernel build failed with "error: code model kernel does not support PIC mode"
+```
+diff --git a/Makefile b/Makefile
+index 0f9cb36d45c2c..b95a6774e4600 100644
+--- a/Makefile
++++ b/Makefile
+@@ -341,8 +341,8 @@ include scripts/Kbuild.include
+ 
+ # Make variables (CC, etc...)
+ AS             = $(CROSS_COMPILE)as
+-LD             = $(CROSS_COMPILE)ld
+-CC             = $(CROSS_COMPILE)gcc
++LD             = $(CROSS_COMPILE)ld -no-pie
++CC             = $(CROSS_COMPILE)gcc -no-pie
+ CPP            = $(CC) -E
+ AR             = $(CROSS_COMPILE)ar
+ NM             = $(CROSS_COMPILE)nm
+```
+ 
 check source difference between two branches
 * ``git diff -w branchAAA branchBBB path``
 * ``git diff -w origin/master feature/fix-lock drivers/scsi``
