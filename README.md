@@ -1,5 +1,11 @@
 # Tips for Linux kernel & driver development
 
+git sub-option for --pretty:
+* format:"%s" print only subject
+```
+git log --pretty=format:"%s" ...mdadm-3.3.2-5
+```
+
 kernel build failed with "error: code model kernel does not support PIC mode"
 ```
 diff --git a/Makefile b/Makefile
