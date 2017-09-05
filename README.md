@@ -1,5 +1,17 @@
 # Tips for Linux kernel & driver development
 
+emacs: replace something into the newline
+* ; -> newline: M-x replace-string RET ; RET C-q C-j
+* =y -> newline bool newline default y: alt+shift+5, =y, C-q C-j bool C-q C-j default y C-q C-j
+```
+config COMPAT_IS___SKB_TX_HASH=y
+
+config COMPAT_IS___SKB_TX_HASH
+	bool
+	default y
+```
+
+
 git sub-option for --pretty:
 * format:"%s" print only subject
 ```
