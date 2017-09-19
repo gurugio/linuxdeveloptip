@@ -1,5 +1,12 @@
 # Tips for Linux kernel & driver development
 
+Check processor, vsr, rss and pid with ps command
+```
+gohkim@ws00837:~$ ps -ao pid,psr,user,vsz,rss,comm,args
+  PID PSR USER        VSZ   RSS COMMAND         COMMAND
+ 9734   7 gohkim    42648  3724 ps              ps -ao pid,psr,user,vsz,rss,comm,args
+ ```
+ 
 Summation of integer values from file which has multi lines of integer.
 * $ awk '{s+=$1} END {print s}' < file.text
 ```
