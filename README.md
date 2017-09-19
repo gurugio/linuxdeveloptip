@@ -1,5 +1,11 @@
 # Tips for Linux kernel & driver development
 
+Summation of integer values from file which has multi lines of integer.
+* $ awk '{s+=$1} END {print s}' < file.text
+```
+sudo cat /proc/$i/smaps | grep Anon | awk '{ print $2 }' | awk '{s+=$1} END {print s}'
+```
+
 emacs: replace something into the newline
 * ; -> newline: M-x replace-string RET ; RET C-q C-j
 * =y -> newline bool newline default y: alt+shift+5, =y, C-q C-j bool C-q C-j default y C-q C-j
