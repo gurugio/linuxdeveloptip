@@ -1,5 +1,12 @@
 # Tips for Linux kernel & driver development
 
+How to use iostat
+* https://bartsjerps.wordpress.com/2011/03/04/io-bottleneck-linux/
+* host wait time = storage wait * queue-size
+```
+$ iostat -xk 2 /dev/sd[bc]
+```
+
 Check processor, vsr, rss and pid with ps command
 ```
 gohkim@ws00837:~$ ps -ao pid,psr,user,vsz,rss,comm,args
