@@ -13,6 +13,12 @@ crash> mod -S ./tmp/usr/lib/debug/
 ...
 ffffffffa00e5900  kvm                   415201  ./tmp/usr/lib/debug/usr/lib/modules/4.4.36-2-pserver/kernel/arch/x86/kvm/kvm.ko
 ...
+
+crash> mod -S /usr/lib/debug/lib/modules/4.4.50-1-pserver/kernel/
+     MODULE       NAME                    SIZE  OBJECT FILE
+ffffffffa0001a80  thermal                 7818  /usr/lib/debug/lib/modules/4.4.50-1-pserver/kernel/drivers/acpi/thermal.ko 
+ffffffffa000ac40  fan                     4134  /usr/lib/debug/lib/modules/4.4.50-1-pserver/kernel/drivers/acpi/fan.ko 
+......
 ```
 
 # find "struct kvm"
