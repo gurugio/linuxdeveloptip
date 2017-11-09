@@ -8,7 +8,8 @@ road to software-defined storage
 - follow http://dirkmeister.blogspot.de/2010/01/storage-systems-course-my-own-idea.html
 - select one course from http://dirkmeister.blogspot.de/2009/12/storage-system-and-file-system-courses.html
 
-'''
+Copy http://dirkmeister.blogspot.de/2010/01/storage-systems-course-my-own-idea.html
+```
 Introduction, Overview, Disk Drive Architecture
 Material: Ruemmler, Wilkes An introduction to disk drive modeling
 
@@ -52,6 +53,8 @@ Material: Muthitacharoen et al., A Low-bandwidth Network File System, Douglis, I
 
 Performance Analysis
 Material: Traeger, A nine year study of file system and storage benchmarking (at least parts of it)
-'''
+```
 
-Reading "Mastering CEPH"
+3. CEPH
+- Reading "Mastering CEPH"
+- and ?
