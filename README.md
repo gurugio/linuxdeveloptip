@@ -1,5 +1,22 @@
 # Tips for Linux kernel & driver development
 
+
+How to analyze /proc/<pid>/smaps
+* get only 10M ~ 50M size chunks
+* total size of 10M ~ 50M size chunks
+```
+$ sudo cat /proc/22313/smaps | grep ^Rss | awk '{ if ($2 > 10000 && $2 < 50000) print $2 }'
+43032
+24588
+20496
+12304
+34960
+24608
+13448
+$ sudo cat /proc/22313/smaps | grep ^Rss | awk '{ if ($2 > 10000 && $2 < 50000) s+=$2 } END { print s }'
+4753212
+```
+
 How to use iostat
 * https://bartsjerps.wordpress.com/2011/03/04/io-bottleneck-linux/
 * host wait time = storage wait * queue-size
