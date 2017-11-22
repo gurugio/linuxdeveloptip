@@ -1,5 +1,9 @@
 # Tips for Linux kernel & driver development
 
+cherry pick a patch and force to apply picked source
+```
+$ git cherry-pick --strategy=recursive --strategy-option theirs af951a78075b
+```
 
 How to analyze /proc/<pid>/smaps
 * get only 10M ~ 50M size chunks
