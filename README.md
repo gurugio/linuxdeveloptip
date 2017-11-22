@@ -1,6 +1,6 @@
 # Tips for Linux kernel & driver development
 
-cherry pick a patch and force to apply picked source
+cherry pick a patch and force to apply picked source when solving conflicts
 ```
 $ git cherry-pick --strategy=recursive --strategy-option theirs af951a78075b
 ```
