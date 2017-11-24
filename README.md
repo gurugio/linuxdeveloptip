@@ -1,5 +1,10 @@
 # Tips for Linux kernel & driver development
 
+Show a file in another branch: git show branch:file
+```
+$ git show develop:l1/lock_server.cc
+```
+
 cherry pick a patch and force to apply picked source when solving conflicts
 ```
 $ git cherry-pick --strategy=recursive --strategy-option theirs af951a78075b
