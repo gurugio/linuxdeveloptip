@@ -1,5 +1,10 @@
 # Tips for Linux kernel & driver development
 
+Download a single file with rsync
+```
+$ rsync -az /var/www/public_html/filename root@<remote-ip>:/var/www/public_html
+```
+
 Show a file in another branch: git show branch:file
 ```
 $ git show develop:l1/lock_server.cc
