@@ -1,5 +1,11 @@
 # Tips for Linux kernel & driver development
 
+How to check what kernel version contains the specified commit
+```
+$ git describe --contains c171caf7be2888ae3affcaa1f4e1628a01904d70
+v4.4.52~1
+```
+
 Download a single file with rsync
 ```
 $ rsync -az /var/www/public_html/filename root@<remote-ip>:/var/www/public_html
