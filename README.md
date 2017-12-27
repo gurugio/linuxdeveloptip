@@ -1,5 +1,15 @@
 # Tips for Linux kernel & driver development
 
+Remove '+' of linux version
+```
+$ make kernelrelease
+4.4.73-1-pserver+
+$ touch .scmversion
+$ make kernelrelease
+4.4.73-1-pserver
+
+```
+
 How to check what kernel version contains the specified commit
 ```
 $ git describe --contains c171caf7be2888ae3affcaa1f4e1628a01904d70
