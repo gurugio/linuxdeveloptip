@@ -1,5 +1,14 @@
 # Tips for Linux kernel & driver development
 
+scsi documents
+* https://www.ibm.com/developerworks/library/l-scsi-api/index.html
+* http://www.tldp.org/HOWTO/html_single/SCSI-2.4-HOWTO/
+* http://www.tldp.org/HOWTO/archived/SCSI-Programming-HOWTO/
+* https://www.kernel.org/doc/htmldocs/scsi/index.html
+* http://www.mit.edu/afs.new/athena/system/rhlinux/redhat-6.2-docs/HOWTOS/other-formats/pdf/SCSI-Programming-HOWTO.pdf
+* https://www.kernel.org/doc/Documentation/scsi/scsi_eh.txt
+* https://www.kernel.org/doc/Documentation/scsi/scsi_mid_low_api.txt
+
 Remove '+' of linux version
 ```
 $ make kernelrelease
