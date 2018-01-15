@@ -417,3 +417,39 @@ setup_br0()
 setup_br0 5
 run_servers
 ```
+
+# simple script to run VM with 3 disks
+
+## virtio-pci
+
+```
+qemu-system-x86_64 -cpu host -smp 2 -m 4096M -kernel arch/x86/boot/bzImage \
+-initrd ~/work/qemu_initramfs/initramfs_dir/initramfs-busybox-x86.cpio.gz \
+-nographic -append "console=ttyS0 earlyprintk boot_delay=1 loglevel=7" -enable-kvm \
+-drive file=~/work/qemu_initramfs/disk/diska,if=none,cache=none,format=raw,id=disk1 \
+-device virtio-blk-pci,bus=pci.0,addr=0x6,drive=disk1,id=virtio-disk1 \
+-drive file=~/work/qemu_initramfs/disk/diskb,if=none,cache=none,format=raw,id=disk2 \
+-device virtio-blk-pci,bus=pci.0,addr=0x7,drive=disk2,id=virtio-disk2 \
+-drive file=~/work/qemu_initramfs/disk/diskc,if=none,cache=none,format=raw,id=disk3 \
+-device virtio-blk-pci,bus=pci.0,addr=0x8,drive=disk3,id=virtio-disk3 \
+-redir tcp:7777::22 -s -monitor telnet:0.0.0.0:9400,server,nowait
+```
+
+
+## virtio-scsi
+
+Set config: ``CONFIG_SCSI_VIRTIO=y``
+
+```
+qemu-system-x86_64 -cpu host -smp 2 -m 4096M -kernel arch/x86/boot/bzImage \
+-initrd ~/work/qemu_initramfs/initramfs_dir/initramfs-busybox-x86.cpio.gz \
+-nographic -append "console=ttyS0 earlyprintk boot_delay=1 loglevel=7" -enable-kvm \
+-device virtio-scsi-pci,id=scsi \
+-device scsi-hd,drive=hd1 \
+-drive file=~/work/qemu_initramfs/disk/diskc,if=none,cache=none,format=raw,id=hd1 \
+-device scsi-hd,drive=hd2 \
+-drive file=~/work/qemu_initramfs/disk/diskb,if=none,cache=none,format=raw,id=hd2 \
+-device scsi-hd,drive=hd3 \
+-drive file=~/work/qemu_initramfs/disk/diskc,if=none,cache=none,format=raw,id=hd3 \
+-redir tcp:7777::22 -s -monitor telnet:0.0.0.0:9400,server,nowait
+```
