@@ -1,10 +1,14 @@
 # Tips for Linux kernel & driver development
 
 Dynamic debugging
-* ``cat /sys/kernel/debug/dynamic_debug/control``: print all source lines to print debugging messages
-* ``drivers/scsi/scsi_transport_srp.c:639 [scsi_transport_srp]srp_timed_out =_ "timeout for sdev %s\012"``: ``=_`` means it is disabled
-* ``echo -n 'file scsi_transport_srp.c line 639 +p' > /sys/kernel/debug/dynamic_debug/control``: enable one line
-* ``drivers/scsi/scsi_transport_srp.c:639 [scsi_transport_srp]srp_timed_out =p "timeout for sdev %s\012"``: ``=p`` means it is enabled
+* ``cat /sys/kernel/debug/dynamic_debug/control``
+  * print all source lines to print debugging messages
+* ``drivers/scsi/scsi_transport_srp.c:639 [scsi_transport_srp]srp_timed_out =_ "timeout for sdev %s\012"``
+  * ``=_`` means it is disabled
+* ``echo -n 'file scsi_transport_srp.c line 639 +p' > /sys/kernel/debug/dynamic_debug/control``
+  * enable one line
+* ``drivers/scsi/scsi_transport_srp.c:639 [scsi_transport_srp]srp_timed_out =p "timeout for sdev %s\012"``
+  * ``=p`` means it is enabled
 
 scsi documents
 * https://www.ibm.com/developerworks/library/l-scsi-api/index.html
