@@ -1,5 +1,8 @@
 # Tips for Linux kernel & driver development
 
+Use -b option to create a branch from origin repository
+* ``git checkout -b $branch origin/$branch``
+
 Dynamic debugging
 * ``cat /sys/kernel/debug/dynamic_debug/control``
   * print all source lines to print debugging messages
