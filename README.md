@@ -1,5 +1,25 @@
 # Tips for Linux kernel & driver development
 
+How to decompress initrd
+* initrd could be combination of normal binary and compressed data
+* check where the compressed data starts with binwalk
+* extract only decompress data with dd
+```
+gohkim@ws00837:~/tmp$ binwalk ./initrd.img-4.14.75-1-storage 
+
+DECIMAL       HEXADECIMAL     DESCRIPTION
+--------------------------------------------------------------------------------
+0             0x0             ASCII cpio archive (SVR4 with no CRC), file name: "kernel", file name length: "0x00000007", file size: "0x00000000"
+120           0x78            ASCII cpio archive (SVR4 with no CRC), file name: "kernel/x86", file name length: "0x0000000B", file size: "0x00000000"
+244           0xF4            ASCII cpio archive (SVR4 with no CRC), file name: "kernel/x86/microcode", file name length: "0x00000015", file size: "0x00000000"
+376           0x178           ASCII cpio archive (SVR4 with no CRC), file name: "kernel/x86/microcode/.enuineIntel.align.0123456789abc", file name length: "0x00000036", file size: "0x00000000"
+540           0x21C           ASCII cpio archive (SVR4 with no CRC), file name: "kernel/x86/microcode/GenuineIntel.bin", file name length: "0x00000026", file size: "0x00180C00"
+1576624       0x180EB0        ASCII cpio archive (SVR4 with no CRC), file name: "TRAILER!!!", file name length: "0x0000000B", file size: "0x00000000"
+1576960       0x181000        xz compressed data
+
+dd if=./initrd.img-4.14.75-1-storage bs=1576960 skip=1 | xz --decompress | cpio -idv
+```
+
 Use -b option to create a branch from origin repository
 * ``git checkout -b $branch origin/$branch``
 
