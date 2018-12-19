@@ -1,5 +1,21 @@
 # Tips for Linux kernel & driver development
 
+
+Performance check in 60 seconds
+* https://medium.com/netflix-techblog/linux-performance-analysis-in-60-000-milliseconds-accc10403c55
+```
+uptime
+dmesg | tail
+vmstat 1
+mpstat -P ALL 1
+pidstat 1
+iostat -xz 1
+free -m
+sar -n DEV 1
+sar -n TCP,ETCP 1
+top
+```
+
 How to decompress initrd
 * initrd could be combination of normal binary and compressed data
 * check where the compressed data starts with binwalk
