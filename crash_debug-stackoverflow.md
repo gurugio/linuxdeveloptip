@@ -426,3 +426,97 @@ Dump of assembler code for function async_page_fault:
 End of assembler dump.
 ```
 
+# other useful commands
+
+* sys: system information
+* bt -l: detail call-stack
+* mach: machine information and registers (stack address of kernel, irq and etc)
+* kmem -s: kernel memory usage
+
+```
+crash> sys
+      KERNEL: ./vmlinux-4.4.131-1-pserver
+    DUMPFILE: /srv/unpacking/ps303a-71-dump.201901151115  [PARTIAL DUMP]
+        CPUS: 56
+        DATE: Tue Jan 15 11:15:07 2019
+...
+crash> bt -l
+PID: 7251   TASK: ffff883fcf5b6a00  CPU: 24  COMMAND: "stress-ng-vm"
+ #0 [ffff881fff383980] machine_kexec at ffffffff81043fff
+    /build/linux-pserver-future-8eZtJS/linux-pserver-future-4.4.131/include/linux/ftrace.h: 671
+ #1 [ffff881fff3839d0] crash_kexec at ffffffff810df4b3
+    /build/linux-pserver-future-8eZtJS/linux-pserver-future-4.4.131/kernel/kexec_core.c: 875
+ #2 [ffff881fff383a98] oops_end at ffffffff81008628
+ ...
+crash> mach
+          MACHINE TYPE: x86_64
+           MEMORY SIZE: 255.9 GB
+                  CPUS: 56
+       PROCESSOR SPEED: 2394 Mhz
+                    HZ: 100
+             PAGE SIZE: 4096
+   KERNEL VIRTUAL BASE: ffff880000000000
+   KERNEL VMALLOC BASE: ffffc90000000000
+   KERNEL VMEMMAP BASE: ffffea0000000000
+      KERNEL START MAP: ffffffff80000000
+   KERNEL MODULES BASE: ffffffffa0000000
+     KERNEL STACK SIZE: 16384
+        IRQ STACK SIZE: 16384
+            IRQ STACKS:
+                 CPU 0: ffff881fff200000
+                 CPU 1: ffff883ffea00000
+                 CPU 2: ffff881fff220000
+                 CPU 3: ffff883ffea20000
+                 CPU 4: ffff881fff240000
+                 CPU 5: ffff883ffea40000
+                 CPU 6: ffff881fff260000
+                 CPU 7: ffff883ffea60000
+                 CPU 8: ffff881fff280000
+                 CPU 9: ffff883ffea80000
+                CPU 10: ffff881fff2a0000
+                CPU 11: ffff883ffeaa0000
+                CPU 12: ffff881fff2c0000
+                CPU 13: ffff883ffeac0000
+                CPU 14: ffff881fff2e0000
+                CPU 15: ffff883ffeae0000
+                CPU 16: ffff881fff300000
+                CPU 17: ffff883ffeb00000
+                CPU 18: ffff881fff320000
+                CPU 19: ffff883ffeb20000
+                CPU 20: ffff881fff340000
+                CPU 21: ffff883ffeb40000
+                CPU 22: ffff881fff360000
+                CPU 23: ffff883ffeb60000
+crash> kmem -s
+CACHE            NAME                 OBJSIZE  ALLOCATED     TOTAL  SLABS  SSIZE
+ffff883fee4d8700 kvm_async_pf             136          0         0      0     8k
+ffff883fee4d8600 kvm_vcpu               17088          0         0      0    32k
+ffff883fee4d8500 kvm_mmu_page_header      168          0         0      0     8k
+ffff883feed68000 nf_conntrack_1           312         11      1938     38    16k
+ffff881ffec04400 SCTPv6                  1424          1        22      1    32k
+ffff881ffec04500 SCTP                    1264          0         0      0    32k
+ffff881ffec04600 UDPLITEv6               1080          0         0      0    32k
+ffff881ffec04700 UDPv6                   1080          2       210      7    32k
+ffff881ffec04800 tw_sock_TCPv6            272          0         0      0    16k
+ffff881ffec04900 request_sock_TCPv6       320          0         0      0    16k
+ffff881ffec04a00 TCPv6                   2056          4        90      6    32k
+ffff880074934100 kcopyd_job              3312          0         0      0    32k
+ffff880074934000 dm_uevent               2632          0         0      0    32k
+ffff883ff04a0700 cfq_queue                232          0         0      0    16k
+ffff883ff04a0600 bsg_cmd                  312          0         0      0    16k
+ffff883ff04a0500 mqueue_inode_cache       864          1        36      1    32k
+ffff883ff04a0400 nfsd4_stateids           176          0         0      0     8k
+ffff883ff04a0300 nfsd4_files              264          0         0      0    16k
+ffff883ff04a0200 nfsd4_openowners         440          0         0      0    16k
+ffff883ff04a0100 nfs_direct_cache         328          0         0      0    16k
+ffff883ff04a0000 nfs_inode_cache         1000          0         0      0    32k
+ffff881ff1df0c00 hugetlbfs_inode_cache    576          2       112      2    32k
+ffff881ff1df0b00 squashfs_inode_cache     616          0         0      0    32k
+ffff881ff1df0a00 jbd2_journal_handle       48          0         0      0     4k
+ffff881ff1df0900 jbd2_journal_head        112          0         0      0     8k
+ffff881ff1df0800 jbd2_revoke_table_s       16          0         0      0     4k
+ffff881ff1df0700 jbd2_revoke_record_s      32          0         0      0     4k
+ffff881ff1df0600 ext2_inode_cache         792          0         0      0    32k
+ffff881ff1df0500 ext4_inode_cache        1056          0         0      0    32k
+ffff881ff1df0400 ext4_free_data            64          0         0      0     4k
+```
