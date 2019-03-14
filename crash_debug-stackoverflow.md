@@ -28,6 +28,29 @@ LOAD AVERAGE: 1.07, 1.09, 1.08
 
 crash> 
 ```
+# traversal a list
+
+workqueues is a global list-header.
+A node or the list is a list field in struct workqueue_struct.
+I can print some field of all nodes in workqueues list.
+
+```
+crash> list workqueue_struct.list -s workqueue_struct.name -H workqueues
+ffff928fbf019200
+  name = "events\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
+ffff928fbf019400
+  name = "events_highpri\000\000\000\000\000\000\000\000\000"
+ffff928fbf019600
+  name = "events_long\000\000\000\000\000\000\000\000\000\000\000\000"
+ffff928fbf019800
+  name = "events_unbound\000\000\000\000\000\000\000\000\000"
+ffff928fbf019a00
+  name = "events_freezable\000\000\000\000\000\000\000"
+ffff928fbf019c00
+  name = "events_power_efficient\000"
+ffff928fbf019e00
+  name = "events_freezable_power_"
+```
 
 # get task information
 
