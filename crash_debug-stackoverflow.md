@@ -451,6 +451,7 @@ End of assembler dump.
 
 # other useful commands
 
+* bt -FF: print all stacks for local variables, function pointers and etc
 * sys: system information
 * bt -l: detail call-stack
 * mach: machine information and registers (stack address of kernel, irq and etc)
