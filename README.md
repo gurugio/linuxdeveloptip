@@ -1,5 +1,7 @@
 # Tips for Linux kernel & driver development
 
+Find remote log server
+```$ ping loghost i```
 
 Performance check in 60 seconds
 * https://medium.com/netflix-techblog/linux-performance-analysis-in-60-000-milliseconds-accc10403c55
