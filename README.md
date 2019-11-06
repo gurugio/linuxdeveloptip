@@ -5,7 +5,7 @@ Virtualbox 6.0: set static ip on guest
 * check modules: vboxnetflt, vboxnetadp, vboxdrv
 * Before starting the guest, file ->  Host Network Manager -> Create -> vboxnet0 is created -> set IP 192.168.79.40
 * Virtualbox machine setting -> my guest -> Settings -> Network -> Adapter 2 -> Enable, Attached to Host-only adapter, Name: vboxnet0
-* On guest, set static ip 192.168.79.41 (not same ip to vboxnet0)
+* On guest, set static ip 192.168.79.41 into the second ethenet interface (not same ip to vboxnet0). First ethernet interface must use dhcp for external network.
 * Now Host can ping 192.168.79.41
 
 Find remote log server
