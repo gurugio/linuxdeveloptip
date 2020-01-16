@@ -1,5 +1,43 @@
 # Tips for Linux kernel & driver development
 
+git double-dot vs tripple-dot
+* double-dot: diff between commits of the same branch -> see source change in one branch
+```
+$ git diff xxxx..yyyy
+diff --git a/tests/data_consistency.py b/tests/data_consistency.py
+index 63e2bf3..b2facd2 100644
+--- a/tests/data_consistency.py
++++ b/tests/data_consistency.py
+@@ -162,7 +162,7 @@ def test_data_consistency(env):
+ 
+     images_for_ubuntu = ['Ubuntu-19.10-server']
+ 
+-    ktest_vm = KtestVM(env, images_for_ubuntu, 'Gioh_' + f'Gioh_{test_data_consistency.__name__}')
++    ktest_vm = KtestVM(env, images_for_ubuntu, 'Gioh_' + __file__)
+```
+* tripple-dot: show diff between two branches -> see difference of two branch
+```
+gkim@laptop:~/work/kernel-qang$ git log master...develop
+commit bfeaabbca85a3a1a72bd1da10d2e829cd1993f4b (origin/master, origin/develop, origin/HEAD, develop)
+Author: Gioh Kim
+Date:   Fri Jan 3 10:54:17 2020 +0100
+
+    commit......
+    
+gkim@laptop:~/work/kernel-qang$ git diff master...develop
+diff --git a/tests/ktestpserver.py b/tests/ktestpserver.py
+index 227b674..cf7ded1 100644
+--- a/tests/ktestpserver.py
++++ b/tests/ktestpserver.py
+@@ -7,7 +7,6 @@ from qang_test_utils_lib.dcmanager_rest import (get_dcm_pserver_properties,
+                                                 get_pserver_uuid_of_vm)
+ 
+ from tests.kernel_test_util import ssh_shell
+-from tests.kteststorage import STORAGE3_NODE_GUID, STORAGE4_NODE_GUID
+ from tests.ktestvm import KtestVM
+......
+```
+
 Virtualbox 6.0: set static ip on guest
 * https://www.codesandnotes.be/2018/10/16/network-of-virtualbox-instances-with-static-ip-addresses-and-internet-access/
 * check modules: vboxnetflt, vboxnetadp, vboxdrv
