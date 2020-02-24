@@ -47,7 +47,7 @@ Virtualbox 6.0: set static ip on guest
 * Now Host can ping 192.168.79.41
 
 Find remote log server
-```$ ping loghost i```
+```$ ping loghost```
 
 Performance check in 60 seconds
 * https://medium.com/netflix-techblog/linux-performance-analysis-in-60-000-milliseconds-accc10403c55
