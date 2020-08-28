@@ -57,6 +57,22 @@ root@ws00837:/home/gohkim/work/tools/intel-iommu-perf# trace-cmd report | less
 ```
 
 
+use ```trace-cmd report -O fgraph:tailprint=yes``` to print function name at the end brace:
+
+```
+     usb-storage-14188 [007] 84301.845267: funcgraph_entry:                   |  intel_alloc_iova() {
+     usb-storage-14188 [007] 84301.845267: funcgraph_entry:                   |    alloc_iova() {
+     usb-storage-14188 [007] 84301.845267: funcgraph_entry:        0.051 us   |      kmem_cache_alloc();
+     usb-storage-14188 [007] 84301.845267: funcgraph_entry:        0.018 us   |      _raw_spin_lock_irqsave();
+     usb-storage-14188 [007] 84301.845267: funcgraph_entry:        0.024 us   |      iova_get_pad_size();
+     usb-storage-14188 [007] 84301.845268: funcgraph_entry:        0.030 us   |      _raw_spin_unlock_irqrestore();
+     usb-storage-14188 [007] 84301.845268: funcgraph_exit:         0.993 us   |    } /* alloc_iova */
+     usb-storage-14188 [007] 84301.845268: funcgraph_exit:         1.279 us   |  } /* intel_alloc_iova */
+
+...
+```
+
+
 DON't forget to reset the setting for ftrace
 ```
 # trace-cmd reset
