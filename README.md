@@ -1,5 +1,12 @@
 # Tips for Linux kernel & driver development
 
+Run gitlab-runner locally to test .gitlab-ci.yml file
+* run gitlab-runner at the directory where .gitlab-ci.yml exists
+* tests is a test label in .gitlab-ci.yml file
+```
+gkim@ib1:~/pb-linux-4.19$ sudo gitlab-runner exec shell tests
+```
+
 git double-dot vs tripple-dot
 * double-dot: diff between commits of the same branch -> see source change in one branch
 ```
