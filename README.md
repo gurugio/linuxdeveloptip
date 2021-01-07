@@ -1,5 +1,34 @@
 # Tips for Linux kernel & driver development
 
+Get source line from panic call-trace
+
+```
+Oct 20 19:21:32 hubert kernel: Call Trace:
+Oct 20 19:21:32 hubert kernel:  [<c8831060>] auth_domain_drop+0x50/0x60 [sunrpc]
+...
+
+$ gdb ./net/sunrpc/svcauth.o
+(gdb) list *(auth_domain_drop+0x50)
+0x1e0 is in auth_domain_drop (net/sunrpc/svcauth.c:147).
+(...)
+147			authtab[dom->flavour]->domain_release(dom);
+```
+
+Get source line from kernel address
+
+```
+$ addr2line -e ./vmlinux 0xc01cf0d1
+/mnt/linux-2.5.26/include/asm/bitops.h:244
+or
+$ gdb ./vmlinux
+...
+(gdb) l *0xc01cf0d1
+0xc01cf0d1 is in read_chan (include/asm/bitops.h:244).
+(...)
+244		return ((1UL << (nr & 31)) & (((const volatile unsigned int *) addr)[nr >> 5])) != 0;
+(...)
+```
+
 Run gitlab-runner locally to test .gitlab-ci.yml file
 * run gitlab-runner at the directory where .gitlab-ci.yml exists
 * tests is a test label in .gitlab-ci.yml file
