@@ -1,3 +1,9 @@
+## 2021-08-13
+setup guest os
+- build-essential emacs gnome-tweak-tool git
+- rustup
+- download github.com/Rust-for-Linux/linux
+- 
 
 ## 2021-08-10
 Download https://github.com/Rust-for-Linux/linux
