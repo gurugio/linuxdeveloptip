@@ -5,6 +5,8 @@ setup guest os
 - rustup
 - download github.com/Rust-for-Linux/linux
 - clang clang-12 lld lld-12
+- sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-12 100
+- sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-12 100
 
 ## 2021-08-10
 Download https://github.com/Rust-for-Linux/linux
@@ -22,15 +24,19 @@ Install build tools
 - sudo apt-get install clang
 - linker 'ld.lld' not found
 - sudo apt-get install lld
+```
 *** Compiler is too old.
 ***   Your Clang version:    10.0.0
 ***   Minimum Clang version: 10.0.1
+```
 - sudo apt-get install clang-12 => no fix
 - sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-12 100
 - sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-10 100
+```
 *** Linker is too old.
 ***   Your LLD version:    10.0.0
 ***   Minimum LLD version: 10.0.1
+```
 - sudo apt-get install lld-12
 - sudo update-alternatives --install /usr/bin/lld lld /usr/bin/lld-12 100
 - ln -s ld.lld-12 ld.lld
