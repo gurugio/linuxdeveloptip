@@ -10,6 +10,9 @@ setup guest os
 - cp /boot/config~~ .config
 - make menuconfig
 - enable CONFIG_RUST and CONFIG_SAMPLES_RUST 
+- must do `rustup component add rust-src` (https://github.com/Rust-for-Linux/linux/blob/rust/Documentation/rust/quick-start.rst)
+- must do `cargo install --locked --version 0.56.0 bindgen`  (https://github.com/Rust-for-Linux/linux/blob/rust/Documentation/rust/quick-start.rst)
+
 
 ## 2021-08-10
 Download https://github.com/Rust-for-Linux/linux
