@@ -1,9 +1,10 @@
 ## 2021-08-13
 setup guest os
 - build-essential emacs gnome-tweak-tool git
+- git clone https://github.com/gurugio/env.git
 - rustup
 - download github.com/Rust-for-Linux/linux
-- 
+- clang clang-12 lld lld-12
 
 ## 2021-08-10
 Download https://github.com/Rust-for-Linux/linux
@@ -40,8 +41,8 @@ make x86_64_defconfig
 - make LLVM=1
 
 QEMU booting
-- install: qemu-system-x86_64 -enable-kvm -smp 8 -m 4096M -hda ubuntu.qcow2 -cdrom ubuntu-20.04.2.0-desktop-amd64.iso -boot d 
-- 1st try: qemu-system-x86_64 -enable-kvm -smp 8 -m 4096M -hda ubuntu.qcow2 -boot c
+- install: qemu-system-x86_64 -enable-kvm -smp 8 -m 4096M -hda ubuntu.img -cdrom ubuntu-20.04.2.0-desktop-amd64.iso -boot d 
+- 1st try: qemu-system-x86_64 -enable-kvm -smp 8 -m 4096M -hda ubuntu.img -boot c
 - swap fail?
 - I selected automatic installation and it didn't activate swap area.
 - I splited partitions manually and created swap area.
