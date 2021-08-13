@@ -1,12 +1,15 @@
 ## 2021-08-13
 setup guest os
-- build-essential emacs gnome-tweak-tool git
+- build-essential emacs gnome-tweak-tool git libssl-dev
 - git clone https://github.com/gurugio/env.git
 - rustup
 - download github.com/Rust-for-Linux/linux
 - clang clang-12 lld lld-12
 - sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-12 100
 - sudo update-alternatives --install /usr/bin/ld.lld ld.lld /usr/bin/ld.lld-12 100
+- cp /boot/config~~ .config
+- make menuconfig
+- enable CONFIG_RUST and CONFIG_SAMPLES_RUST 
 
 ## 2021-08-10
 Download https://github.com/Rust-for-Linux/linux
