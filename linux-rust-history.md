@@ -13,6 +13,7 @@ setup guest os
 - must do `rustup component add rust-src` (https://github.com/Rust-for-Linux/linux/blob/rust/Documentation/rust/quick-start.rst)
 - must do `cargo install --locked --version 0.56.0 bindgen`  (https://github.com/Rust-for-Linux/linux/blob/rust/Documentation/rust/quick-start.rst)
 - make LLVM=1
+- build rust modules failed: enable CONFIG_DEBUG_INFO and build again
 
 ## 2021-08-10
 Download https://github.com/Rust-for-Linux/linux
