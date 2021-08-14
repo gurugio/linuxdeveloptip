@@ -1,3 +1,17 @@
+## 2021-08-14
+booting rust-linux kernel
+- copy ubuntu config file /boot/config-5.11.0-25-generic
+- enable CONFIG_RUST and CONFIG_SAMPLES_RUST
+- build and boot
+
+load sample modules
+- `modprobe rust_minimal` : work fine
+- build and insmod rust modules
+```
+make M=samples/rust/ LLVM=1
+sudo insmod samples/rust/rust_minimal.ko
+```
+
 ## 2021-08-13
 setup guest os
 - install packages for kernel build: build-essential emacs gnome-tweak-tool git libssl-dev libelf-dev
@@ -12,7 +26,7 @@ setup guest os
 - enable CONFIG_RUST and CONFIG_SAMPLES_RUST 
 - must do `rustup component add rust-src` (https://github.com/Rust-for-Linux/linux/blob/rust/Documentation/rust/quick-start.rst)
 - must do `cargo install --locked --version 0.56.0 bindgen`  (https://github.com/Rust-for-Linux/linux/blob/rust/Documentation/rust/quick-start.rst)
-- make LLVM=1
+- make LLVM=1 -j4
 - build rust modules failed: enable CONFIG_DEBUG_INFO and build again
 
 ## 2021-08-10
