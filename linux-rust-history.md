@@ -1,3 +1,17 @@
+## 2021-08-15
+read some example modules
+- setup rust-analyzer to read rust core library
+  * https://github.com/Rust-for-Linux/linux/blob/rust/Documentation/rust/quick-start.rst#rust-analyzer
+  * change rust setting of visual studio code from Rust to rust-analyzer
+  * `make rust-analyzer` to create rust-project.json
+  * `go to definition` works for core macros and functions
+- rust_minimal.rs
+- rust_print.rs
+  * pr_* functions
+- rust_module_parameters.rs
+  * macros to define module parameters
+  * lock for module parameters setting
+
 ## 2021-08-14
 booting rust-linux kernel
 - copy ubuntu config file /boot/config-5.11.0-25-generic
