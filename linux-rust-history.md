@@ -1,3 +1,59 @@
+## 2021-08-17
+
+reference: https://docs.rust-embedded.org/book/intro/no-std.html
+
+```rust
+#![no_std] // do not use the standard library such like std crate, but it still link core crate.
+#![feature(allocator_api, global_asm)]  // no information found
+
+use kernel::prelude::*;
+// rust/kernel/prelude.rs: imports all Rust code.
+
+module! {
+    type: RustMinimal,
+    name: b"rust_minimal",
+    author: b"Rust for Linux Contributors",
+    description: b"Rust minimal sample",
+    license: b"GPL v2",
+}
+// see rust/macros/module.rs
+// module! macro calls module::module() function.
+// module::module() function creates struct ModuleInfo: type, license, name, author(option), description(option), alias(option), params(option)
+// type: looks like a name of the structure implementing this module
+
+struct RustMinimal {
+    message: String,
+}
+
+impl KernelModule for RustMinimal {
+// rust/kernel/lib.rs defines KernelModule trait with init function
+// init() == module_init of C
+    fn init() -> Result<Self> {
+        pr_info!("Rust minimal sample (init)\n");
+        pr_info!("Am I built-in? {}\n", !cfg!(MODULE));
+// cfg!: https://doc.rust-lang.org/reference/conditional-compilation.html
+// cfg! returns true if this is a module. So !cfg!() is false if this is a module.
+
+        Ok(RustMinimal {
+            message: "on the heap!".try_to_owned()?,
+        })
+    }
+}
+
+impl Drop for RustMinimal {
+// Drop should be a destructor of the module.
+// But what does the drop() must do?
+// self.message is automatically freed AFTER drop().
+// Does it have to free memory allocated by init()?
+// Or most are freed automatically?
+    fn drop(&mut self) {
+        pr_info!("My message is {}\n", self.message);
+        pr_info!("Rust minimal sample (exit)\n");
+    }
+}
+
+```
+
 ## 2021-08-15
 read some example modules
 - setup rust-analyzer to read rust core library
