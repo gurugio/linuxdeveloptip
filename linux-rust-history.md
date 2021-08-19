@@ -1,13 +1,16 @@
 ## 2021-08-19
 
+linux/samples/rust/rust_random.rs
 ```rust
-
 #![no_std]
 #![feature(allocator_api, global_asm)]
 
 use kernel::{
-    file::File,
+    file::File, // rust/kernel/fils.rs: struct File, wraps the kernel's struct file
     file_operations::FileOperations,
+    // rust/kernel/file.rs: trait FileOperations
+    // It has functions: read, release, write, seek, ioctl...
+    // All have the default implementation: return Err(Error::EINVAL), why not ENOSYS?
     io_buffer::{IoBufferReader, IoBufferWriter},
     prelude::*,
 };
@@ -22,8 +25,12 @@ struct RandomFile;
 
 impl FileOperations for RandomFile {
     kernel::declare_file_operations!(read, write, read_iter, write_iter);
+    
 
     fn read(_this: &Self, file: &File, buf: &mut impl IoBufferWriter, _: u64) -> Result<usize> {
+    
+    
+    
         let total_len = buf.len();
         let mut chunkbuf = [0; 256];
 
