@@ -1,3 +1,213 @@
+## 2021-08-19
+
+```rust
+
+#![no_std]
+#![feature(allocator_api, global_asm)]
+
+use kernel::{
+    file::File,
+    file_operations::FileOperations,
+    io_buffer::{IoBufferReader, IoBufferWriter},
+    prelude::*,
+};
+// import more and more
+
+#[derive(Default)]
+// I've seen derive(Debug). What is Default?
+// see: https://doc.rust-lang.org/std/default/trait.Default.html
+// "A trait for giving a type a useful default value."
+// But there is no variable to be set with the default value. hmm..
+struct RandomFile;
+
+impl FileOperations for RandomFile {
+    kernel::declare_file_operations!(read, write, read_iter, write_iter);
+
+    fn read(_this: &Self, file: &File, buf: &mut impl IoBufferWriter, _: u64) -> Result<usize> {
+        let total_len = buf.len();
+        let mut chunkbuf = [0; 256];
+
+        while !buf.is_empty() {
+            let len = chunkbuf.len().min(buf.len());
+            let chunk = &mut chunkbuf[0..len];
+
+            if file.is_blocking() {
+                kernel::random::getrandom(chunk)?;
+            } else {
+                kernel::random::getrandom_nonblock(chunk)?;
+            }
+            buf.write_slice(chunk)?;
+        }
+        Ok(total_len)
+    }
+
+    fn write(_this: &Self, _file: &File, buf: &mut impl IoBufferReader, _: u64) -> Result<usize> {
+        let total_len = buf.len();
+        let mut chunkbuf = [0; 256];
+        while !buf.is_empty() {
+            let len = chunkbuf.len().min(buf.len());
+            let chunk = &mut chunkbuf[0..len];
+            buf.read_slice(chunk)?;
+            kernel::random::add_randomness(chunk);
+        }
+        Ok(total_len)
+    }
+}
+
+module_misc_device! {
+    type: RandomFile,
+    name: b"rust_random",
+    author: b"Rust for Linux Contributors",
+    description: b"Just use /dev/urandom: Now with early-boot safety",
+    license: b"GPL v2",
+}
+```
+
+
+```rust
+#![no_std]
+#![feature(allocator_api, global_asm)]
+
+use kernel::pr_cont;
+// import pr_cont macro in kernel crate (rust/kernel/print.rs)
+
+
+use kernel::prelude::*;
+
+module! {
+    type: RustPrint,
+    name: b"rust_print",
+    author: b"Rust for Linux Contributors",
+    description: b"Rust printing macros sample",
+    license: b"GPL v2",
+}
+
+struct RustPrint;
+
+impl KernelModule for RustPrint {
+    fn init() -> Result<Self> {
+        pr_info!("Rust printing macros sample (init)\n");
+
+        pr_emerg!("Emergency message (level 0) without args\n");
+        pr_alert!("Alert message (level 1) without args\n");
+        pr_crit!("Critical message (level 2) without args\n");
+        pr_err!("Error message (level 3) without args\n");
+        pr_warn!("Warning message (level 4) without args\n");
+        pr_notice!("Notice message (level 5) without args\n");
+        pr_info!("Info message (level 6) without args\n");
+
+        pr_info!("A line that");
+        pr_cont!(" is continued");
+        // ok, contiguous print.. why??
+        
+        pr_cont!(" without args\n");
+
+        pr_emerg!("{} message (level {}) with args\n", "Emergency", 0);
+        pr_alert!("{} message (level {}) with args\n", "Alert", 1);
+        pr_crit!("{} message (level {}) with args\n", "Critical", 2);
+        pr_err!("{} message (level {}) with args\n", "Error", 3);
+        pr_warn!("{} message (level {}) with args\n", "Warning", 4);
+        pr_notice!("{} message (level {}) with args\n", "Notice", 5);
+        pr_info!("{} message (level {}) with args\n", "Info", 6);
+
+        pr_info!("A {} that", "line");
+        pr_cont!(" is {}", "continued");
+        pr_cont!(" with {}\n", "args");
+
+        Ok(RustPrint)
+    }
+}
+
+impl Drop for RustPrint {
+    fn drop(&mut self) {
+        pr_info!("Rust printing macros sample (exit)\n");
+    }
+}
+```
+
+```rust
+#![no_std]
+#![feature(allocator_api, global_asm)]
+
+use kernel::prelude::*;
+
+module! {
+    type: RustModuleParameters,
+    name: b"rust_module_parameters",
+    
+    // All string starts with 'b'
+    
+    author: b"Rust for Linux Contributors",
+    description: b"Rust module parameters sample",
+    license: b"GPL v2",
+    // Just do like this!!!
+    params: {
+        my_bool: bool {
+            default: true,
+            permissions: 0,
+            description: b"Example of bool",
+        },
+        my_i32: i32 {
+            default: 42,
+            permissions: 0o644,
+            description: b"Example of i32",
+        },
+        my_str: str {
+            default: b"default str val",
+            permissions: 0o644,
+            description: b"Example of a string param",
+        },
+        my_usize: usize {
+            default: 42,
+            permissions: 0o644,
+            description: b"Example of usize",
+        },
+        my_array: ArrayParam<i32, 3> {
+            default: [0, 1],
+            permissions: 0,
+            description: b"Example of array",
+        },
+    },
+}
+
+struct RustModuleParameters; // MUST implement KernelModule and Drop traits
+
+impl KernelModule for RustModuleParameters {
+    fn init() -> Result<Self> {
+        pr_info!("Rust module parameters sample (init)\n");
+
+        {
+            let lock = THIS_MODULE.kernel_param_lock();
+            // type is KParamGuard
+            // automatically unlock at the end of this block??
+            
+            pr_info!("Parameters:\n");
+            pr_info!("  my_bool:    {}\n", my_bool.read());
+            
+            // don't know how my_bool.read() works..
+            // Why my_bool.read() without lock but my_i32.read with lock?
+            
+            
+            pr_info!("  my_i32:     {}\n", my_i32.read(&lock));
+            pr_info!(
+                "  my_str:     {}\n",
+                core::str::from_utf8(my_str.read(&lock))?
+            );
+            pr_info!("  my_usize:   {}\n", my_usize.read(&lock));
+            pr_info!("  my_array:   {:?}\n", my_array.read());
+        }
+
+        Ok(RustModuleParameters)
+    }
+}
+
+impl Drop for RustModuleParameters {
+    fn drop(&mut self) {
+        pr_info!("Rust module parameters sample (exit)\n");
+    }
+}
+```
+
 ## 2021-08-17
 
 reference: https://docs.rust-embedded.org/book/intro/no-std.html
