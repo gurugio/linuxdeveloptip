@@ -46,6 +46,7 @@ impl FileOperations for RandomFile {
 
     fn read(_this: &Self, file: &File, buf: &mut impl IoBufferWriter, _: u64) -> Result<usize> {
     // buf: a mutable reference to an object implementing IoBufferWriter trait
+    // buf has count inside of struct, so it is not necessary to specify how many bytes it should read.
     
         let total_len = buf.len();
         let mut chunkbuf = [0; 256];
@@ -53,6 +54,7 @@ impl FileOperations for RandomFile {
         while !buf.is_empty() {
             let len = chunkbuf.len().min(buf.len());
             let chunk = &mut chunkbuf[0..len];
+            // make slice buffer from the original 256bytes buffer
 
             if file.is_blocking() {
                 kernel::random::getrandom(chunk)?;
@@ -60,8 +62,13 @@ impl FileOperations for RandomFile {
             } else {
                 kernel::random::getrandom_nonblock(chunk)?;
             }
+            // get data to chunk buffer
             buf.write_slice(chunk)?;
+            // ? => if it returns error, this function returns the error.
+            
             // write chunk into buf
+            // buf.len() returns the data size to be read.
+            // If buf.is_empty() is true, it reads all data.
         }
         Ok(total_len)
     }
