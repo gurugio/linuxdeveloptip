@@ -1,3 +1,94 @@
+## 2021-08-20
+
+linux/samples/rust/rust_random.rs
+```rust
+#![no_std]
+#![feature(allocator_api, global_asm)]
+
+use kernel::{
+    file::File, // rust/kernel/fils.rs: struct File, wraps the kernel's struct file
+    file_operations::FileOperations,
+    // rust/kernel/file.rs: trait FileOperations
+    // It has functions: read, release, write, seek, ioctl...
+    // All have the default implementation: return Err(Error::EINVAL)
+    io_buffer::{IoBufferReader, IoBufferWriter},
+    // This is a trait, so what does this module implement?
+    prelude::*,
+};
+// import more and more
+
+#[derive(Default)]
+// I've seen derive(Debug). What is Default?
+// see: https://doc.rust-lang.org/std/default/trait.Default.html
+// "A trait for giving a type a useful default value."
+// But there is no variable to be set with the default value. hmm..
+struct RandomFile;
+
+
+// see the definition of FileOperations: pub trait FileOperations: Send + Sync + Sized
+// It means FileOperations type has bound with Send, Sync and Sized trait.
+// Where is the implementation of Send + Sync + Sized??
+// Sized trait means RandomFile structure should have fixed size at compile time.
+// Sync trait? Send trait? They are only empty traits in marker.rs file.
+
+impl FileOperations for RandomFile {
+    kernel::declare_file_operations!(read, write, read_iter, write_iter);
+    // This macro call is extended to
+    // const TO_USE: kernel::file_operations::ToUse = rust_random::file_operations::ToUse {
+    // read: true, write: true, read_iter:true, write_iter: true,
+    // }
+    // So it creates a TO_USE variable with kernel::file_operations::ToUse type.
+    // ToUse struct has a table to check which sys-call is used.
+    // But there is no function for read_iter and write_iter.
+    // Why does it set read_iter:true and write_iter:true?
+    // see the comment of fn read() definition: Corresponds to the 'read' and 'read_iter' in struct file_operations.
+    // So read() implementation is called by both read and read_iter.
+
+    fn read(_this: &Self, file: &File, buf: &mut impl IoBufferWriter, _: u64) -> Result<usize> {
+    // buf: a mutable reference to an object implementing IoBufferWriter trait
+    
+        let total_len = buf.len();
+        let mut chunkbuf = [0; 256];
+
+        while !buf.is_empty() {
+            let len = chunkbuf.len().min(buf.len());
+            let chunk = &mut chunkbuf[0..len];
+
+            if file.is_blocking() {
+                kernel::random::getrandom(chunk)?;
+                // fill random bytes into chunk
+            } else {
+                kernel::random::getrandom_nonblock(chunk)?;
+            }
+            buf.write_slice(chunk)?;
+            // write chunk into buf
+        }
+        Ok(total_len)
+    }
+
+    fn write(_this: &Self, _file: &File, buf: &mut impl IoBufferReader, _: u64) -> Result<usize> {
+        let total_len = buf.len();
+        let mut chunkbuf = [0; 256];
+        while !buf.is_empty() {
+            let len = chunkbuf.len().min(buf.len());
+            let chunk = &mut chunkbuf[0..len];
+            buf.read_slice(chunk)?;
+            kernel::random::add_randomness(chunk);
+        }
+        Ok(total_len)
+    }
+}
+
+module_misc_device! {
+    type: RandomFile,
+    name: b"rust_random",
+    author: b"Rust for Linux Contributors",
+    description: b"Just use /dev/urandom: Now with early-boot safety",
+    license: b"GPL v2",
+}
+```
+
+
 ## 2021-08-19
 
 linux/samples/rust/rust_random.rs
