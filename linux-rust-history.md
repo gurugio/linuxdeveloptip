@@ -2,12 +2,16 @@
 
 linux/samples/rust/rust_chrdev.rs
 ```rust
+
 #![no_std]
 #![feature(allocator_api, global_asm)]
 
-use kernel::prelude::*;
-use kernel::{c_str, chrdev, file_operations::FileOperations};
+use kernel::{c_str, chrdev, file::File, 
+    file_operations::FileOperations, io_buffer::{IoBufferReader, IoBufferWriter}};
+use kernel::str::CStr;
 
+
+use kernel::prelude::*;
 module! {
     type: RustChrdev,
     name: b"rust_chrdev",
@@ -15,18 +19,40 @@ module! {
     description: b"Rust character device sample",
     license: b"GPL v2",
 }
-
 #[derive(Default)]
 struct RustFile;
 
 impl FileOperations for RustFile {
-    kernel::declare_file_operations!();
-    // No operation is defined
+    kernel::declare_file_operations!(read, write, read_iter, write_iter);
+
+    fn read(_this: &Self, _file: &File, buf: &mut impl IoBufferWriter, _: u64) -> Result<usize> {
+        let total = buf.len();
+        let chunkbuf = b"a";
+        while !buf.is_empty() {
+            pr_crit!("buf-len={}\n", buf.len());
+            buf.write_slice(chunkbuf)?;
+        }
+        Ok(total)
+    }
+// write does not work
+//root@gurugio-rust:/home/gurugio/linux# echo abcdefgh > /dev/rc
+//bash: echo: write error: Bad address
+    fn write(_this: &Self, _file: &File, buf: &mut impl IoBufferReader, _: u64) -> Result<usize> {
+        let total = buf.len();
+        let mut chunkbuf = [0; 256];
+        pr_alert!("total={}", total);
+
+        while !buf.is_empty() {
+            buf.read_slice(&mut chunkbuf)?;
+            let sss = CStr::from_bytes_with_nul(&chunkbuf)?;
+            pr_alert!("{:?}", sss.as_char_ptr());
+        }
+        Ok(total)
+    }
 }
 
 struct RustChrdev {
     _dev: Pin<Box<chrdev::Registration<2>>>,
-    // what is Pin?
 }
 
 impl KernelModule for RustChrdev {
@@ -37,7 +63,6 @@ impl KernelModule for RustChrdev {
             chrdev::Registration::new_pinned(c_str!("rust_chrdev"), 0, &THIS_MODULE)?;
 
         // Register the same kind of device twice, we're just demonstrating
-        // that you can use multiple minors. There are two minors in this case
         // because its type is `chrdev::Registration<2>`
         chrdev_reg.as_mut().register::<RustFile>()?;
         chrdev_reg.as_mut().register::<RustFile>()?;
@@ -51,6 +76,7 @@ impl Drop for RustChrdev {
         pr_info!("Rust character device sample (exit)\n");
     }
 }
+
 ```
 
 ## 2021-08-20
