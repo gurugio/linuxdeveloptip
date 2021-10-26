@@ -1,5 +1,12 @@
 # Tips for Linux kernel & driver development
 
+use ftrace with trace-cmd tool
+```
+$ sudo trace-cmd record --func-stack -p function -l smp_call_function_single -e irq_vectors -f 'vector == 251'
+
+$ sudo trace-cmd report
+```
+
 Get source line from panic call-trace
 
 ```
