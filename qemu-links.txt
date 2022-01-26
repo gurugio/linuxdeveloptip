@@ -1,0 +1,5 @@
+https://gdoc.pub/doc/e/2PACX-1vSsskD0A2XgHoZhaYLAkS7lmCOrfxkGXk1WTovWEAyeoELVdBjrE-NzD8h-NvJfKhxMpUg2aXzaD-XG
+https://lists.gnu.org/archive/html/qemu-devel/2011-04/pdfhC5rVdz7U8.pdf
+https://github.com/eopXD/VM/tree/master/hw1/reference
+https://github.com/Wenzel/awesome-virtualization
+https://lettieri.iet.unipi.it/hacking/2018/20161124-io-paravirtualization-tour.pdf
