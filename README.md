@@ -1,5 +1,10 @@
 # Tips for Linux kernel & driver development
 
+run a program without systemd memory limit
+```
+sudo systemd-run --scope --slice=system.slice command
+```
+
 use ftrace with trace-cmd tool
 ```
 $ sudo trace-cmd record --func-stack -p function -l smp_call_function_single -e irq_vectors -f 'vector == 251'
