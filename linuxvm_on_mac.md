@@ -51,6 +51,7 @@ $ sudo virt-copy-out -a debian-3607-aarch64.qcow2 /boot/vmlinuz-5.10.0-11-arm64 
 COME back to MACOS.
 Boot the VM.
 * I don't know why the kernel and initrd images are specified for qemu parameters.
+* I guess that's because I did not install the GUI. It requires the kernel and initrd to use terminal interface.
 ```
 $ qemu-system-aarch64 \
     -accel hvf \
@@ -69,6 +70,10 @@ Log in
 ```
 $ ssh gurugio@localhost -p 10022
 ```
+
+Stop the VM
+* Ctrl + c, a: get back to Qemu monitor
+* (qemu) q: stop VM
 
 Upgrade kernel
 ```
