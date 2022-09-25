@@ -64,3 +64,14 @@ $ qemu-system-aarch64 \
     -drive if=virtio,file=./disk.qcow2,format=qcow2,id=hd \
     -device intel-hda -device hda-duplex -nographic
 ```
+
+Log in
+```
+$ ssh gurugio@localhost -p 10022
+```
+
+Upgrade kernel
+```
+$ scp -P 10022 gurugio@localhost:/boot/vmlinux-<NEW> gurugio@localhost:/boot/initrd.img-<NEW> .
+boot with new kernel and initrd images
+```
