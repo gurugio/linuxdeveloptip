@@ -52,6 +52,7 @@ COME back to MACOS.
 Boot the VM.
 * I don't know why the kernel and initrd images are specified for qemu parameters.
 * I guess that's because I did not install the GUI. It requires the kernel and initrd to use terminal interface.
+* Use VNCserver or Xserver for GUI 
 ```
 $ qemu-system-aarch64 \
     -accel hvf \
