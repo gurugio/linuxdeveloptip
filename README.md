@@ -1,5 +1,25 @@
 # Tips for Linux kernel & driver development
 
+set static ip on virtualbox vm
+```
+1. disable cloud-init
+cat > /etc/cloud/cloud.cfg.d/99-disable-cloud-init.cfg
+network: {config: disabled}
+2. change /etc/netplan/00-installer-config.yaml
+network:
+  ethernets:
+    enp1s0:
+      dhcp4: no
+      addresses:
+        - 192.168.122.128/24
+      gateway4: 192.168.122.1
+      nameservers:
+        addresses: [1.1.1.1, 1.0.0.1]
+  version: 2
+3. restart netplan
+sudo netplan apply
+```
+
 run a program without systemd memory limit
 ```
 sudo systemd-run --scope --slice=system.slice command
