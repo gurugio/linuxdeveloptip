@@ -1,5 +1,11 @@
 # Tips for Linux kernel & driver development
 
+
+파일에서 특정 변수 값을 true -> false로 변경하는 sed
+```
+sed -i 's/^\(rgw_dynamic_resharding\s*=\s*\)true/\1false/g' /etc/ceph/ceph.conf
+```
+
 set static ip on virtualbox vm
 ```
 1. disable cloud-init
