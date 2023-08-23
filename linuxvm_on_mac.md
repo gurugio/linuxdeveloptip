@@ -6,6 +6,9 @@ install qemu package with brew
 Download debian netinstall ISO
 
 Download initrd and linux image
+
+다음 파일들을 받는다
+
 ```
 $ qemu-img create -f qcow2 debian-3607-aarch64.qcow2 32G 
 $ wget http://ftp.au.debian.org/debian/dists/bullseye/main/installer-arm64/current/images/netboot/debian-installer/arm64/initrd.gz
@@ -13,6 +16,9 @@ $ wget http://ftp.au.debian.org/debian/dists/bullseye/main/installer-arm64/curre
 ```
 
 install debian
+
+다음과 같이 데비안을 설치한다
+
 ```
 qemu-system-aarch64 \
     -accel hvf \
@@ -29,6 +35,9 @@ qemu-system-aarch64 \
 
 MOVE to another linux machine because MACOS does not have libguestfs-tools.
 And extract kernel and initrd images from the disk image.
+
+데비안이 설치된 qcow2 파일에서 커널과 initrd를 복사한다. 이 명령은 맥에서는 실행안되고 리눅스 환경에서만 실행된다.
+
 ```
 $ sudo apt install libguestfs-tools
 $ sudo virt-ls -a debian-3607-aarch64.qcow2 /boot/
@@ -52,7 +61,10 @@ COME back to MACOS.
 Boot the VM.
 * I don't know why the kernel and initrd images are specified for qemu parameters.
 * I guess that's because I did not install the GUI. It requires the kernel and initrd to use terminal interface.
-* Use VNCserver or Xserver for GUI 
+* Use VNCserver or Xserver for GUI
+
+가져온 커널/initrd로 데비안 부팅한다.
+
 ```
 $ qemu-system-aarch64 \
     -accel hvf \
