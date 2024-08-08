@@ -1,6 +1,90 @@
 # Tips for Linux kernel & driver development
 
 
+Qemu 프로세스의 모니터 접속 방법
+```
+소켓 파일 위치(nc로 접속되지않고 virsh로만 가능): /var/lib/libvirt/qemu/domain-223-instance-00015a24/monitor.sock
+virsh나 libvirtd의 사용법을 추가로 찾아볼것
+[root@LNIASBE1801:/var/log]# virsh qemu-monitor-command instance-00015b1f --pretty '{"execute":"query-block"}' |  head
+{
+  "return": [
+    {
+      "io-status": "ok",
+      "device": "drive-virtio-disk0",
+      "locked": false,
+      "removable": false,
+      "inserted": {
+        "iops_rd": 0,
+        "detect_zeroes": "off",
+```
+
+네트워크 트래픽 터미널에서 모니터링
+```
+# dstat -Neth0,eth1
+```
+
+sar 이용해서 네트워크 이벤트 기록 확인하기
+```
+# sar -A -f /var/log/sa/sa03 -s 22:00 -e 22:30
+
+%soft
+Percentage of time spent by the CPU or CPUs to service software interrupts.
+```
+
+netstat외에 네트워크 소켓 상태/프로세스 이름 출력
+```
+# ss -tnlp
+[root@mcdr-rgw033-mobs-jp2p-prod:/home1/irteamsu]# sar -n EDEV 30
+18시 15분 10초     IFACE   rxerr/s   txerr/s    coll/s  rxdrop/s  txdrop/s  txcarr/s  rxfram/s  rxfifo/s  txfifo/s
+18시 15분 40초        lo      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00      0.00
+18시 15분 40초      eth0      0.00      0.00      0.00      2.57      0.00      0.00      0.00      0.00      0.00
+[root@mcdr-rgw033-mobs-jp2p-prod:/home1/irteamsu]# netstat -i
+Kernel Interface table
+Iface             MTU    RX-OK RX-ERR RX-DRP RX-OVR    TX-OK TX-ERR TX-DRP TX-OVR Flg
+eth0             1500 9927468241      0 1498139 0      8054456883      0      0      0 BMRU
+eth1             1500 9852901595      0 1467514 0      11473264646      0      0      0 BMRU
+[root@mcdr-rgw033-mobs-jp2p-prod:/home1/irteamsu]# ss -s
+Total: 83940
+TCP:   94864 (estab 14971, closed 72973, orphaned 3, timewait 11204)
+
+Transport Total     IP        IPv6
+RAW	  1         0         1
+UDP	  4         4         0
+TCP	  21891     21881     10
+INET	  21896     21885     11
+FRAG	  0         0         0
+[root@mcdr-rgw033-mobs-jp2p-prod:/home1/irteamsu]# netstat -s
+Ip:
+    Forwarding: 1
+    28662064109 total packets received
+    100 forwarded
+    913434 with unknown protocol
+```
+
+
+iptables를 이용해서 특정 서버로 가는 패킷을 drop시키기
+```
+#!/bin/bash
+
+# mds ip list
+IPs="
+10.x.x.x
+10.x.x.x
+"
+
+for IP in ${IPs}
+do
+    sudo /usr/sbin/iptables -A OUTPUT -d ${IP} -j DROP
+done
+
+sudo /usr/sbin/iptables -L
+
+
+# After test, clean up the rules
+sudo /usr/sbin/iptables -F
+```
+
+
 파일에서 특정 변수 값을 true -> false로 변경하는 sed
 ```
 sed -i 's/^\(rgw_dynamic_resharding\s*=\s*\)true/\1false/g' /etc/ceph/ceph.conf
